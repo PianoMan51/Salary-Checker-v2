@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/d66dd0368f.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="nav">
+            <div id="nav_pages">
+                <button class="nav_page" id="nav1">
+                    <i class="fa-solid fa-house-chimney fa-2xl" style="color: var(--darkestgray)"></i>Home
+                </button>
+                <button class="nav_page" id="nav2">
+                    <i class="fa-solid fa-calendar-days fa-2xl" style="color: var(--darkestgray)"></i>Calendar
+                </button>
+                <button class="nav_page" id="nav3">
+                    <i class="fa-solid fa-sack-dollar fa-2xl" style="color: var(--darkestgray)"></i>Paycheck
+                </button>
+                <button class="nav_page" id="nav4">
+                    <i class="fa-solid fa-chart-line fa-2xl" style="color: var(--darkestgray)"></i>Graphs
+                </button>
+            </div>
+            <div id="nav_options">
+                <i class="fa-solid fa-bell fa-2xl"></i>
+                <i class="fa-solid fa-gear fa-2xl"></i>
+                <i class="fa-solid fa-bars fa-2xl"></i>
+                <i class="fa-solid fa-wrench fa-2xl"></i>
+            </div>
+        </div>
+
+        <div id="app">
+            <div class="topbar" id="topbar">
+                <div id="changeMonths">
+                    <button class="changeMonthButton" id="prevBtn">
+                        <i class="fa-solid fa-arrow-left fa-2xl changeMonthBtn" style="color: #ffffff"></i>
+                    </button>
+                    <span id="currentMonth"></span>
+                    <button class="changeMonthButton" id="nextBtn">
+                        <i class="fa-solid fa-arrow-right fa-2xl changeMonthBtn" style="color: #ffffff"></i>
+                    </button>
+                </div>
+                <div id="changeYear">
+                    <button class="year" id="year2017">2017</button>
+                    <button class="year" id="year2018">2018</button>
+                    <button class="year" id="year2019">2019</button>
+                    <button class="year" id="year2020">2020</button>
+                    <button class="year" id="year2021">2021</button>
+                    <button class="year" id="year2022">2022</button>
+                    <button class="year" id="year2023">2023</button>
+                    <button class="year" id="year2024">2024</button>
+                </div>
+                <div id="topbar_user">
+                    <input id="username">
+                    <div id="user_icon"></div>
+                </div>
+
+            </div>
+
+            <div id="content">
+                <div class="page" id="page_nav1">
+                    <div class="content_section left page_section">
+                        <div class="white_section_left" id="labelContainer" style="background-color: var(--lightgray)">
+                            <div id="labels">
+                                <div class="label">
+                                    <a class="labeldata" id="money_preview"></a>
+                                    <a class="labeltext" id="money_preview_month"></a>
+                                </div>
+
+                                <div class="label" id="money_preview_2">
+                                    <a class="labeldata" id="perk_preview"></a>
+                                    <a class="labeltext">Perk </a>
+                                </div>
+                            </div>
+                            <div id="graph_month">
+                                <canvas id="progress_month"></canvas>
+                            </div>
+                        </div>
+                        <div class="white_section_left" id="shiftListContainer">
+                            <div id="shiftListHeaders">
+                                <span class="shiftListHeader">Day</span>
+                                <span class="shiftListHeader">Start</span>
+                                <span class="shiftListHeader">End</span>
+                                <span class="shiftListHeader">Hours</span>
+                                <span class="shiftListHeader">Lunch</span>
+                                <span class="shiftListHeader">Evening</span>
+                                <span class="shiftListHeader">Saturday</span>
+                                <span class="shiftListHeader">Sunday</span>
+                            </div>
+                            <ul id="shiftList"></ul>
+                        </div>
+                    </div>
+                    <div class="content_section right page_section">
+                        <div class="white_section_right" id="circleProgressContainer">
+                            <div id="circleProgress">
+                                <canvas id="progress_circle"></canvas>
+                                <span id="shiftCount"></span>
+                            </div>
+                            <div id="progress_data">
+                                <div class="progress_data">
+                                    <label class="legend" id="legend1"></label>
+                                    <span id="normalTime"></span>
+                                </div>
+                                <div class="progress_data">
+                                    <div class="legend" id="legend2"></div>
+                                    <span id="eveningTime"></span>
+                                </div>
+                                <div class="progress_data">
+                                    <div class="legend" id="legend3"></div>
+                                    <span id="saturdayTime"></span>
+                                </div>
+                                <div class="progress_data">
+                                    <div class="legend" id="legend4"></div>
+                                    <span id="sundayTime"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="white_section_right" id="preview_calendarContainer">
+                            <table id="preview_calendar">
+                                <tr>
+                                    <th class="weekday">M</th>
+                                    <th class="weekday">T</th>
+                                    <th class="weekday">W</th>
+                                    <th class="weekday">T</th>
+                                    <th class="weekday">F</th>
+                                    <th class="weekday">S</th>
+                                    <th class="weekday">S</th>
+                                </tr>
+                                <tr>
+                                    <td id="tdp0"></td>
+                                    <td id="tdp1"></td>
+                                    <td id="tdp2"></td>
+                                    <td id="tdp3"></td>
+                                    <td id="tdp4"></td>
+                                    <td id="tdp5"></td>
+                                    <td id="tdp6"></td>
+                                </tr>
+                                <tr>
+                                    <td id="tdp7"></td>
+                                    <td id="tdp8"></td>
+                                    <td id="tdp9"></td>
+                                    <td id="tdp10"></td>
+                                    <td id="tdp11"></td>
+                                    <td id="tdp12"></td>
+                                    <td id="tdp13"></td>
+                                </tr>
+                                <tr>
+                                    <td id="tdp14"></td>
+                                    <td id="tdp15"></td>
+                                    <td id="tdp16"></td>
+                                    <td id="tdp17"></td>
+                                    <td id="tdp18"></td>
+                                    <td id="tdp19"></td>
+                                    <td id="tdp20"></td>
+                                </tr>
+                                <tr>
+                                    <td id="tdp21"></td>
+                                    <td id="tdp22"></td>
+                                    <td id="tdp23"></td>
+                                    <td id="tdp24"></td>
+                                    <td id="tdp25"></td>
+                                    <td id="tdp26"></td>
+                                    <td id="tdp27"></td>
+                                </tr>
+                                <tr>
+                                    <td id="tdp28"></td>
+                                    <td id="tdp29"></td>
+                                    <td id="tdp30"></td>
+                                    <td id="tdp31"></td>
+                                    <td id="tdp32"></td>
+                                    <td id="tdp33"></td>
+                                    <td id="tdp34"></td>
+                                </tr>
+                                <tr>
+                                    <td id="tdp35"></td>
+                                    <td id="tdp36"></td>
+                                    <td id="tdp37"></td>
+                                    <td id="tdp38"></td>
+                                    <td id="tdp39"></td>
+                                    <td id="tdp40"></td>
+                                    <td id="tdp41"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="page_nav2">
+                    <div class="content_section left page_section">
+                        <div class="white_section_left">
+                            <div class="container" id="calendarContainer">
+                                <table id="calendar">
+                                    <tr>
+                                        <th>WEEK</th>
+                                        <th class="weekday">MON</th>
+                                        <th class="weekday">TUE</th>
+                                        <th class="weekday">WED</th>
+                                        <th class="weekday">THU</th>
+                                        <th class="weekday">FRI</th>
+                                        <th class="weekday">SAT</th>
+                                        <th class="weekday">SUN</th>
+                                    </tr>
+
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="weekNoInput" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td0"></td>
+                                        <td id="td1"></td>
+                                        <td id="td2"></td>
+                                        <td id="td3"></td>
+                                        <td id="td4"></td>
+                                        <td id="td5"></td>
+                                        <td id="td6"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="week2" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td7"></td>
+                                        <td id="td8"></td>
+                                        <td id="td9"></td>
+                                        <td id="td10"></td>
+                                        <td id="td11"></td>
+                                        <td id="td12"></td>
+                                        <td id="td13"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="week3" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td14"></td>
+                                        <td id="td15"></td>
+                                        <td id="td16"></td>
+                                        <td id="td17"></td>
+                                        <td id="td18"></td>
+                                        <td id="td19"></td>
+                                        <td id="td20"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="week4" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td21"></td>
+                                        <td id="td22"></td>
+                                        <td id="td23"></td>
+                                        <td id="td24"></td>
+                                        <td id="td25"></td>
+                                        <td id="td26"></td>
+                                        <td id="td27"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="week5" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td28"></td>
+                                        <td id="td29"></td>
+                                        <td id="td30"></td>
+                                        <td id="td31"></td>
+                                        <td id="td32"></td>
+                                        <td id="td33"></td>
+                                        <td id="td34"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="weekNo">
+                                            <input id="week6" class="weekNumbers" value="0" />
+                                        </th>
+                                        <td id="td35"></td>
+                                        <td id="td36"></td>
+                                        <td id="td37"></td>
+                                        <td id="td38"></td>
+                                        <td id="td39"></td>
+                                        <td id="td40"></td>
+                                        <td id="td41"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="calendar_buttons">
+                                <div class="calendar_button_set">
+                                    <button class="calendar_button" id="calendar_delete"><i
+                                            class="fa-solid fa-xmark fa-2xl"></i></button>
+                                    <div class="calendar_dot" id="delete_dot"></div>
+                                </div>
+                                <div class="calendar_button_set">
+                                    <button class="calendar_button" id="calendar_holy"><i
+                                            class="fa-solid fa-book-bible fa-2xl"></i></button>
+                                    <div class="calendar_dot" id="holy_dot"></div>
+                                </div>
+                                <div class="calendar_button_set">
+                                    <button class="calendar_button" id="calendar_edit"><i
+                                            class="fa-solid fa-pen-to-square fa-2xl"></i></button>
+                                    <div class="calendar_dot" id="edit_dot"></div>
+                                </div>
+                                <div class="calendar_button_set">
+                                    <button class="calendar_button" id="calendar_sick"><i
+                                            class="fa-solid fa-head-side-cough fa-2xl"></i></button>
+                                    <div class="calendar_dot" id="sick_dot"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="content_section right page_section">
+                        <div id="timeSelectsContainer">
+                            <div id="timeSelects">
+                                <select id="startTime" style="-webkit-appearance: none">
+                                    <option value="06:45">06:45</option>
+                                    <option value="07:00">07:00</option>
+                                    <option value="07:15">07:15</option>
+                                    <option value="07:30">07:30</option>
+                                    <option value="07:45">07:45</option>
+                                    <option value="08:00">08:00</option>
+                                    <option value="08:15">08:15</option>
+                                    <option value="08:30">08:30</option>
+                                    <option value="08:45">08:45</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="09:15">09:15</option>
+                                    <option value="09:30">09:30</option>
+                                    <option value="09:45">09:45</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="10:15">10:15</option>
+                                    <option value="10:30">10:30</option>
+                                    <option value="10:45">10:45</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="11:15">11:15</option>
+                                    <option value="11:30">11:30</option>
+                                    <option value="11:45">11:45</option>
+                                    <option value="12:00">12:00</option>
+                                    <option value="12:15">12:15</option>
+                                    <option value="12:30">12:30</option>
+                                    <option value="12:45">12:45</option>
+                                    <option value="13:00">13:00</option>
+                                    <option value="13:15">13:15</option>
+                                    <option value="13:30">13:30</option>
+                                    <option value="13:45">13:45</option>
+                                    <option value="14:00">14:00</option>
+                                    <option value="14:15">14:15</option>
+                                    <option value="14:30">14:30</option>
+                                    <option value="14:45">14:45</option>
+                                    <option value="15:00">15:00</option>
+                                    <option value="15:15">15:15</option>
+                                    <option value="15:30">15:30</option>
+                                    <option value="15:45">15:45</option>
+                                    <option value="16:00" selected>16:00</option>
+                                    <option value="16:15">16:15</option>
+                                    <option value="16:30">16:30</option>
+                                    <option value="16:45">16:45</option>
+                                    <option value="17:00">17:00</option>
+                                    <option value="17:15">17:15</option>
+                                    <option value="17:30">17:30</option>
+                                    <option value="17:45">17:45</option>
+                                    <option value="18:00">18:00</option>
+                                    <option value="18:15">18:15</option>
+                                    <option value="18:30">18:30</option>
+                                    <option value="18:45">18:45</option>
+                                    <option value="19:00">19:00</option>
+                                    <option value="19:15">19:15</option>
+                                    <option value="19:30">19:30</option>
+                                    <option value="19:45">19:45</option>
+                                    <option value="20:00">20:00</option>
+                                    <option value="20:15">20:15</option>
+                                    <option value="20:30">20:30</option>
+                                    <option value="20:45">20:45</option>
+                                    <option value="21:00">21:00</option>
+                                    <option value="21:15">21:15</option>
+                                </select>
+                                <select id="endTime" style="-webkit-appearance: none">
+                                    <option value="06:45">06:45</option>
+                                    <option value="07:00">07:00</option>
+                                    <option value="07:15">07:15</option>
+                                    <option value="07:30">07:30</option>
+                                    <option value="07:45">07:45</option>
+                                    <option value="08:00">08:00</option>
+                                    <option value="08:15">08:15</option>
+                                    <option value="08:30">08:30</option>
+                                    <option value="08:45">08:45</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="09:15">09:15</option>
+                                    <option value="09:30">09:30</option>
+                                    <option value="09:45">09:45</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="10:15">10:15</option>
+                                    <option value="10:30">10:30</option>
+                                    <option value="10:45">10:45</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="11:15">11:15</option>
+                                    <option value="11:30">11:30</option>
+                                    <option value="11:45">11:45</option>
+                                    <option value="12:00">12:00</option>
+                                    <option value="12:15">12:15</option>
+                                    <option value="12:30">12:30</option>
+                                    <option value="12:45">12:45</option>
+                                    <option value="13:00">13:00</option>
+                                    <option value="13:15">13:15</option>
+                                    <option value="13:30">13:30</option>
+                                    <option value="13:45">13:45</option>
+                                    <option value="14:00">14:00</option>
+                                    <option value="14:15">14:15</option>
+                                    <option value="14:30">14:30</option>
+                                    <option value="14:45">14:45</option>
+                                    <option value="15:00">15:00</option>
+                                    <option value="15:15">15:15</option>
+                                    <option value="15:30">15:30</option>
+                                    <option value="15:45">15:45</option>
+                                    <option value="16:00">16:00</option>
+                                    <option value="16:15">16:15</option>
+                                    <option value="16:30">16:30</option>
+                                    <option value="16:45">16:45</option>
+                                    <option value="17:00">17:00</option>
+                                    <option value="17:15">17:15</option>
+                                    <option value="17:30">17:30</option>
+                                    <option value="17:45">17:45</option>
+                                    <option value="18:00">18:00</option>
+                                    <option value="18:15">18:15</option>
+                                    <option value="18:30">18:30</option>
+                                    <option value="18:45">18:45</option>
+                                    <option value="19:00">19:00</option>
+                                    <option value="19:15">19:15</option>
+                                    <option value="19:30">19:30</option>
+                                    <option value="19:45">19:45</option>
+                                    <option value="20:00">20:00</option>
+                                    <option value="20:15">20:15</option>
+                                    <option value="20:30">20:30</option>
+                                    <option value="20:45">20:45</option>
+                                    <option value="21:00">21:00</option>
+                                    <option value="21:15" selected>21:15</option>
+                                </select>
+                            </div>
+                            <div id="quickSelects">
+                                <span class="quickSelect">06:45</span>
+                                <span class="quickSelect">08:00</span>
+                                <span class="quickSelect">09:00</span>
+                                <span class="quickSelect">10:00</span>
+                                <span class="quickSelect">12:00</span>
+                                <span class="quickSelect">13:00</span>
+                                <span class="quickSelect">14:00</span>
+                                <span class="quickSelect">15:00</span>
+                                <span class="quickSelect">16:00</span>
+                                <span class="quickSelect">17:00</span>
+                                <span class="quickSelect">18:00</span>
+                                <span class="quickSelect">19:00</span>
+                                <span class="quickSelect">19:30</span>
+                                <span class="quickSelect">20:15</span>
+                                <span class="quickSelect">21:15</span>
+                            </div>
+                            <div id="editShift" style="display: none;">
+                                <div class="shiftDetailDiv">
+                                    <span>Shift start</span>
+                                    <input class="shiftDetailInput" id="shiftDetailStart" placeholder="16:00" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Shift end</span>
+                                    <input class="shiftDetailInput" id="shiftDetailEnd" placeholder="21:15" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Time</span>
+                                    <input class="shiftDetailInput" id="shiftDetailTime" placeholder="4.75" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Lunch</span>
+                                    <input class="shiftDetailInput" id="shiftDetailBreak" placeholder="0.5" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Evening hours</span>
+                                    <input class="shiftDetailInput" id="shiftDetailEvening" placeholder="3.25" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Saturday hours</span>
+                                    <input class="shiftDetailInput" id="shiftDetailSaturday" placeholder="0" />
+                                </div>
+                                <div class="shiftDetailDiv">
+                                    <span>Sunday hours</span>
+                                    <input class="shiftDetailInput" id="shiftDetailSunday" placeholder="0" />
+                                </div>
+                            </div>
+                        </div>
+                        <div id="preview">
+                            <div class="preview_section" id="preview_section_left">
+                                <span id="value1"></span>
+                                <span id="value2"></span>
+                                <span id="value3"></span>
+                                <span id="value4"></span>
+                                <span id="value5"></span>
+                            </div>
+                            <div class="preview_section" id="preview_section_right">
+                                <div class="previewIcon">
+                                    <i class="fa-solid fa-briefcase fa-2xl" style="color: white"></i>
+                                </div>
+                                <div class="previewIcon">
+                                    <i class=" fa-solid fa-cloud-moon fa-2xl" style="color: white">
+                                    </i>
+                                </div>
+                                <div class="previewIcon">
+                                    <i class="fa-solid fa-martini-glass fa-2xl" style="color: white"></i>
+                                </div>
+                                <div class="previewIcon">
+                                    <i class="fa-solid fa-church fa-2xl" style="color: white"></i>
+                                </div>
+                                <div class="previewIcon">
+                                    <i class="fa-solid fa-sack-dollar fa-2xl" style="color: white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="page_nav3">
+                    <div class="content_section left page_section">
+                        <div class="white_section_left" id="paysheet">
+                            <div id="paysheetContainer">
+                                <table>
+                                    <tr>
+                                        <th class="specification">Specification</th>
+                                        <th class="ground">Ground</th>
+                                        <th class="unit">Unit</th>
+                                        <th class="rate">Rate</th>
+                                        <th class="amount">Amount</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="base">Normal hours</th>
+                                        <td class="ground"></td>
+                                        <td class="unit" id="totalTime"></td>
+                                        <td class="rate">
+                                            <input id="baseRate" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="baseAmount"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="evening">Evening hours</th>
+                                        <td class="ground"></td>
+                                        <td class="unit" id="totalEvening"></td>
+                                        <td class="rate">
+                                            <input id="eveningRate" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="eveningAmount" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="saturday">Saturday hours</th>
+                                        <td class="ground"></td>
+                                        <td class="unit" id="totalSaturday"></td>
+                                        <td class="rate">
+                                            <input id="saturdayRate" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="saturdayAmount" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="sunday">Sunday hours</th>
+                                        <td class="ground"></td>
+                                        <td class="unit" id="totalSunday"></td>
+                                        <td class="rate">
+                                            <input id="sundayRate" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="sundayAmount" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="sick">Sick hours</th>
+                                        <td class="ground"></td>
+                                        <td class="unit">
+                                            <input id="sickUnit" value="0.00" onchange="saveRates();">
+                                        </td>
+                                        <td class="rate"><input id="sickRate" value="0.00"></td>
+                                        <td class=" amount">
+                                            <input id="sickAmount">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class=" specification">Pension</th>
+                                        <td class="ground" id="ground5"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate">
+                                            <input id="rate5" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="amount5" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="sunday">Payout perk</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount">
+                                            <input id="payoutPerk" value="0.00">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">ATP</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount"><input id="amount6" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">LBC</th>
+                                        <td class="ground" id="ground7"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate">
+                                            <input id="rate7" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="amount7" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">A-Tax</th>
+                                        <td class="ground" id="ground8"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate">
+                                            <input id="rate8" value="0.00">
+                                        </td>
+                                        <td class="amount"><input id="amount8" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">Perks</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount">
+                                            <input id="perk9" value="0.00" onchange="saveRates();">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">P.FOR Aarhus</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount"><input id="amount10" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification upperBorder">Additional Perks</th>
+                                        <td class="ground upperBorder" id="ground11"></td>
+                                        <td class="unit upperBorder"></td>
+                                        <td class="rate upperBorder">
+                                            <input id="rate11" value="0.00">
+                                        </td>
+                                        <td class="amount upperBorder"><input id="amount11" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">Holiday</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount"><input id="amount12"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification lowerBorder">PFA</th>
+                                        <td class="ground lowerBorder" id="ground13"></td>
+                                        <td class="unit lowerBorder"></td>
+                                        <td class="rate lowerBorder">
+                                            <input id="rate13" value="0.00">
+                                        </td>
+                                        <td class="amount lowerBorder"><input id="amount13" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification money">Paycheck</th>
+                                        <td class="ground money"></td>
+                                        <td class="unit money"></td>
+                                        <td class="rate money"></td>
+                                        <td class="amount money"><input id="amount14" /></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content_section right page_section">
+                        <button id="reloadButton" onclick="updatePaysheet(); saveRates();"><i
+                                class=" fa-solid fa-arrows-rotate fa-2xl"></i></button>
+                        <div id="paysheetRight">
+                            <div id="paysheetRightContent">
+                                <div class="accumulated">
+                                    <span class="accumText">Accumulated perks</span>
+                                    <span id="accumulatedAddPerk"></span>
+                                </div>
+                                <div class="accumulated">
+                                    <span class="accumText">Accumulated holiday</span>
+                                    <span id="accumulatedHoliday"></span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="page" id="page_nav4">
+                    <div class="content_section left page_section" id="graphsContainer">
+                        <div class="white_section_left" id="graphs">
+                            <div id="graph_year">
+                                <canvas id="progress_year"></canvas>
+                            </div>
+                            <div id="graph_buttons">
+                                <button class="graph_button side" id="graph_back"></button>
+                                <button class="graph_button primary" id="graph_center"></button>
+                                <button class="graph_button side" id="graph_next"></button>
+                            </div>
+
+                        </div>
+                        <div class="white_section_left" id="yearMonthContainer">
+                            <div id="toggleContainer">
+                                <span>YEAR</span>
+                                <label>
+                                    <input type="checkbox" id="yearMonthToggle" class="toggle-checkbox">
+                                    <div class="toggle-switch"></div>
+                                </label>
+                                <span>TOTAL</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content_section right page_section" id="graphs_numbers">
+                        <div class="white_section_right">
+                        </div>
+                        <div id="yearStatsContainer">
+                            <span class="yearStat" id="yearHours" stat_type="Hours"></span>
+                            <span class="yearStat" id="yearEvening" stat_type="Evening"></span>
+                            <span class="yearStat" id="yearSaturday" stat_type="Saturday"></span>
+                            <span class="yearStat" id="yearSunday" stat_type="Sunday"></span>
+                            <span class="yearStat" id="yearMoney" stat_type="Salary"></span>
+                            <span class="yearStat" id="yearAIncome" stat_type="A-income"></span>
+                            <span class="yearStat" id="yearTax" stat_type="A-tax"></span>
+                            <span class="yearStat" id="yearLBC" stat_type="LBC"></span>
+                            <span class="yearStat" id="yearATP" stat_type="ATP"></span>
+                            <span class="yearStat" id="yearPension" stat_type="Pension"></span>
+                            <span class="yearStat" id="yearPerks" stat_type="Perks"></span>
+                            <span class="yearStat" id="yearAdditionalPerk" stat_type="Additional"></span>
+                            <span class="yearStat" id="yearHoliday" stat_type="Holiday"></span>
+                            <span class="yearStat" id="yearSick" stat_type="Sick"></span>
+                            <span class="yearStat" id="yearBreak" stat_type="Lunch"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
