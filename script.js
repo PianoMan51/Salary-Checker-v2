@@ -146,7 +146,7 @@ let yearButtons = document.querySelectorAll(".year");
 let currentYear = localStorage.getItem("currentYear") || "2023";
 
 function showYearButton(year) {
-  yearButtons.forEach(button => {
+  yearButtons.forEach((button) => {
     button.style.display = button.id === "year" + year ? "block" : "none";
     button.style.width = button.id === "year" + year ? "100%" : "90px";
   });
@@ -164,7 +164,7 @@ yearButtons.forEach((yearButton) => {
 });
 
 changeYear.addEventListener("mouseover", function () {
-  yearButtons.forEach(button => {
+  yearButtons.forEach((button) => {
     button.style.display = "block";
     button.style.width = "90px";
   });
@@ -622,8 +622,6 @@ function changeMonth(direction) {
   updatePaysheet();
 }
 
-
-
 prevBtn.addEventListener("click", function () {
   changeMonth("prev");
   yearChart.update();
@@ -646,8 +644,6 @@ function checkKey(e) {
     yearChart.update();
   }
 }
-
-
 
 function updatePaysheet() {
   let unit1 = document.getElementById("totalTime");
@@ -1200,7 +1196,7 @@ function holyShift(event) {
         body: JSON.stringify({ tdId, content, currentIndex }),
       })
         .then((response) => response.json())
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => console.error("Error:", error));
     }
   }
@@ -1215,7 +1211,7 @@ function updateYearStats() {
   let yearMoney = document.getElementById("yearMoney");
   let yearAIncome = document.getElementById("yearAIncome");
   let yearPerks = document.getElementById("yearPerks");
-  let yearSick = document.getElementById("yearSick")
+  let yearSick = document.getElementById("yearSick");
   let yearTax = document.getElementById("yearTax");
   let yearATP = document.getElementById("yearATP");
   let yearLBC = document.getElementById("yearLBC");
@@ -1322,6 +1318,7 @@ let yearChart = new Chart("progress_year", {
     datasets: [
       {
         data: [],
+        tension: 0.1,
       },
     ],
   },
@@ -1487,12 +1484,11 @@ donutChart.update();
 yearChart.update();
 monthChart.update();
 
-
 let yearMonthToggle = document.getElementById("yearMonthToggle");
-yearMonthToggle.addEventListener('change', () => {
+yearMonthToggle.addEventListener("change", () => {
   if (yearMonthToggle.checked) {
-    console.log('Total');
+    console.log("Total");
   } else {
-    console.log('Year');
+    console.log("Year");
   }
 });
