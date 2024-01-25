@@ -1298,8 +1298,79 @@ let graphNames = [
   "Sick hours",
 ];
 
+// let yearChart = new Chart("progress_year", {
+//   type: "line",
+//   data: {
+//     labels: [
+//       "Jan",
+//       "Feb",
+//       "Mar",
+//       "Apr",
+//       "May",
+//       "Jun",
+//       "Jul",
+//       "Aug",
+//       "Sep",
+//       "Oct",
+//       "Nov",
+//       "Dec",
+//     ],
+//     datasets: [
+//       {
+//         data: [],
+//         tension: 0.1,
+//       },
+//     ],
+//   },
+//   options: {
+//     borderColor: "#3498db",
+//     borderWidth: 5,
+//     pointStyle: false,
+//     scales: {
+//       y: {
+//         display: false,
+//         grid: {
+//           display: false,
+//         },
+//       },
+//       x: {
+//         display: true,
+//         grid: {
+//           display: true,
+//         },
+//         ticks: {
+//           color: (context) => {
+//             if (context.index === currentIndex) {
+//               return "#3498db";
+//             } else {
+//               return "#717577";
+//             }
+//           },
+//           maxRotation: 0,
+//           font: {
+//             weight: (context) => {
+//               if (context.index === currentIndex) {
+//                 return "bold";
+//               } else {
+//                 return "normal";
+//               }
+//             },
+//           },
+//         },
+//       },
+//     },
+//     plugins: {
+//       legend: {
+//         display: false,
+//       },
+//     },
+//     responsive: true,
+//     maintainAspectRatio: false,
+//   },
+// });
+
 let yearChart = new Chart("progress_year", {
-  type: "line",
+  type: "bar",
   data: {
     labels: [
       "Jan",
@@ -1318,17 +1389,16 @@ let yearChart = new Chart("progress_year", {
     datasets: [
       {
         data: [],
-        tension: 0.1,
       },
     ],
   },
   options: {
     borderColor: "#3498db",
-    borderWidth: 5,
     pointStyle: false,
+    indexAxis: "y",
     scales: {
       y: {
-        display: false,
+        display: true,
         grid: {
           display: false,
         },
@@ -1345,16 +1415,6 @@ let yearChart = new Chart("progress_year", {
             } else {
               return "#717577";
             }
-          },
-          maxRotation: 0,
-          font: {
-            weight: (context) => {
-              if (context.index === currentIndex) {
-                return "bold";
-              } else {
-                return "normal";
-              }
-            },
           },
         },
       },
