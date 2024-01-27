@@ -37,8 +37,10 @@ app.get("/home.css", (req, res) => {
 
 app.post("/data", (req, res) => {
   const { tdId, content, currentIndex } = req.body;
-  let shiftTimes = "shiftTimes.json";
-  fs.readFile(shiftTimes, "utf8", (err, data) => {
+  const currentYear = req.query.currentYear || "2024";
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");
@@ -48,21 +50,28 @@ app.post("/data", (req, res) => {
     let jsonData = JSON.parse(data);
     jsonData[currentIndex][parseInt(tdId.slice(2))] = content;
 
-    fs.writeFile(shiftTimes, JSON.stringify(jsonData), "utf8", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error writing to JSON file.");
-        return;
-      }
+    fs.writeFile(
+      shiftTimesFilename,
+      JSON.stringify(jsonData),
+      "utf8",
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error writing to JSON file.");
+          return;
+        }
 
-      res.json({ message: "Shift added successfully." });
-    });
+        res.json({ message: "Shift added successfully." });
+      }
+    );
   });
 });
 
 app.get("/data", (req, res) => {
-  let shiftTimes = "shiftTimes.json";
-  fs.readFile(shiftTimes, "utf8", (err, data) => {
+  const currentYear = req.query.currentYear || "2024";
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");

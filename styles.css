@@ -946,6 +946,11 @@ body {
   background-color: var(--darkestgray);
 }
 
+#changeYear button.active {
+  transform: scale(1.15);
+  background-color: var(--darkestgray);
+}
+
 .calendar_button_set {
   display: flex;
   flex-direction: column;

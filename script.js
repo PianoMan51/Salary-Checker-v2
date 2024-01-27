@@ -11,6 +11,7 @@ let holyButton = document.getElementById("calendar_holy");
 let editShiftSection = document.getElementById("editShift");
 let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
+let currentYear = localStorage.getItem("currentYear") || "2023";
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
 let bottomButton = document.getElementById("bottomButton");
@@ -141,40 +142,43 @@ editButton.addEventListener("click", () => {
   loadCell();
 });
 
-let changeYear = document.getElementById("changeYear");
 let yearButtons = document.querySelectorAll(".year");
-let currentYear = localStorage.getItem("currentYear") || "2023";
 
-function showYearButton(year) {
-  yearButtons.forEach((button) => {
-    button.style.display = button.id === "year" + year ? "block" : "none";
-    button.style.width = button.id === "year" + year ? "100%" : "90px";
-  });
-}
-yearButtons.forEach((yearButton) => {
-  yearButton.style.display = "none";
+let currentYearBtn = document.getElementById("year" + currentYear);
 
-  yearButton.addEventListener("click", function () {
-    currentYear = yearButton.id.substring(4);
+yearButtons.forEach((otherYear) => {
+  otherYear.style.backgroundColor = "var(--gray)";
+  otherYear.classList.remove("active");
+});
+currentYearBtn.style.backgroundColor = "var(--darkergray)";
+
+yearButtons.forEach((year) => {
+  year.addEventListener("click", function () {
+    currentYear = year.innerHTML;
     localStorage.setItem("currentYear", currentYear);
-    showYearButton(currentYear);
-    loadCell();
-    updatePaysheet();
+
+    yearButtons.forEach((otherYear) => {
+      otherYear.style.backgroundColor = "var(--gray)";
+      otherYear.classList.remove("active");
+    });
+
+    year.style.backgroundColor = "var(--darkergray)";
+    year.classList.add("active");
+
+    fetch(`/data?currentYear=${currentYear}`)
+      .then((response) => response.json())
+      .then((data) => {
+        loadCell();
+        updateMonthChart();
+        updateListedShifts();
+        updatePaysheet();
+        updateYearStats();
+      })
+      .catch((error) => {
+        console.error("Error fetching data from server:", error);
+      });
   });
 });
-
-changeYear.addEventListener("mouseover", function () {
-  yearButtons.forEach((button) => {
-    button.style.display = "block";
-    button.style.width = "90px";
-  });
-});
-
-changeYear.addEventListener("mouseout", function () {
-  showYearButton(currentYear);
-});
-
-showYearButton(currentYear);
 
 document.querySelectorAll(".calendar_button").forEach((calendarButton) => {
   calendarButton.addEventListener("click", function () {
@@ -305,7 +309,7 @@ document.querySelectorAll(".quickSelect").forEach((quickSelect) => {
 });
 
 function loadCell() {
-  fetch("/data")
+  fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
       let monthData = data[currentIndex];
@@ -503,8 +507,7 @@ let addShift = (event) => {
               sunday: sundayHours,
               state: 0,
             };
-
-            fetch("/data", {
+            fetch(`/data?currentYear=${currentYear}`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -526,7 +529,7 @@ let addShift = (event) => {
       if (event.target.classList.contains("sick")) {
         event.target.classList.remove("sick");
       }
-      fetch("/data", {
+      fetch(`/data?currentYear=${currentYear}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -553,7 +556,7 @@ Array.from(tdElements).forEach((td) => {
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("sick")) {
       number = parseInt(td.id.match(/\d+/)[0]);
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML =
@@ -566,7 +569,7 @@ Array.from(tdElements).forEach((td) => {
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("sick")) {
       number = parseInt(td.id.match(/\d+/)[0]);
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML = "Sick";
@@ -576,7 +579,7 @@ Array.from(tdElements).forEach((td) => {
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("holy")) {
       number = parseInt(td.id.match(/\d+/)[0]);
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML = data[currentIndex][number].time + "h";
@@ -586,7 +589,7 @@ Array.from(tdElements).forEach((td) => {
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("holy")) {
       number = parseInt(td.id.match(/\d+/)[0]);
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML = "Public Holiday";
@@ -729,7 +732,7 @@ function updatePaysheet() {
       accumulatedHoliday.innerHTML = "$" + sum2;
     });
 
-  fetch("/data")
+  fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
       let circleData1 = document.querySelector("#normalTime");
@@ -1020,7 +1023,7 @@ function updateListedShifts() {
   let shiftList = document.getElementById("shiftList");
   shiftList.innerHTML = "";
 
-  fetch("/data")
+  fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
       for (let i = 0; i < data[currentIndex].length; i++) {
@@ -1115,7 +1118,7 @@ function editShift(event) {
     if (td == "on") {
       td.add("beingEdit");
       td.remove("on");
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           let shiftToEdit = data[currentIndex][number];
@@ -1142,7 +1145,7 @@ function sickShift(event) {
     number = parseInt(tdId.match(/\d+/)[0]);
 
     if (td == "on") {
-      fetch("/data")
+      fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           let Start = data[currentIndex][number].start;
@@ -1160,8 +1163,7 @@ function sickShift(event) {
             state: 1,
             currentIndex: currentIndex,
           };
-
-          fetch(`/data/${currentIndex}/${number}`, {
+          fetch(`/data/${currentIndex}/${number}?currentYear=${currentYear}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(content),
@@ -1188,7 +1190,7 @@ function holyShift(event) {
         sunday: 0,
         state: 2,
       };
-      fetch("/data", {
+      fetch(`/data?currentYear=${currentYear}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1262,7 +1264,7 @@ function updateYearStats() {
       yearSick.innerHTML = sumSick + "h";
     });
 
-  fetch("/data")
+  fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
       for (let i = 0; i < 12; i++) {
@@ -1476,7 +1478,9 @@ function changeGraph(direction) {
   let yearSickHours = [];
 
   Promise.all([
-    fetch("/data").then((response) => response.json()),
+    fetch(`/data?currentYear=${currentYear}`).then((response) =>
+      response.json()
+    ),
     fetch("/paysheetRates").then((response) => response.json()),
   ]).then(([data, paysheetRates]) => {
     // Process data from the first fetch call
