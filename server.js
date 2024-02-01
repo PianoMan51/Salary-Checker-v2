@@ -84,6 +84,9 @@ app.get("/data", (req, res) => {
 });
 
 app.put("/data/:currentIndex/:number", (req, res) => {
+  const currentYear = req.query.currentYear || "2024";
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+
   let { number } = req.params;
   let {
     start,
@@ -107,8 +110,7 @@ app.put("/data/:currentIndex/:number", (req, res) => {
   saturday = parseFloat(saturday);
   sunday = parseFloat(sunday);
 
-  let shiftTimes = "shiftTimes.json";
-  fs.readFile(shiftTimes, "utf8", (err, data) => {
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");
@@ -133,15 +135,20 @@ app.put("/data/:currentIndex/:number", (req, res) => {
       state,
     };
 
-    fs.writeFile(shiftTimes, JSON.stringify(jsonData), "utf8", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error writing to JSON file.");
-        return;
-      }
+    fs.writeFile(
+      shiftTimesFilename,
+      JSON.stringify(jsonData),
+      "utf8",
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error writing to JSON file.");
+          return;
+        }
 
-      res.json({ message: "Shift updated successfully." });
-    });
+        res.json({ message: "Shift updated successfully." });
+      }
+    );
   });
 });
 
