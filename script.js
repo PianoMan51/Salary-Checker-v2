@@ -11,7 +11,7 @@ let holyButton = document.getElementById("calendar_holy");
 let editShiftSection = document.getElementById("editShift");
 let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
-let currentYear = localStorage.getItem("currentYear") || "2023";
+let currentYear = localStorage.getItem("currentYear") || "2024";
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
 let bottomButton = document.getElementById("bottomButton");
@@ -115,8 +115,7 @@ editButton.addEventListener("click", () => {
       state: 0,
       currentIndex: currentIndex,
     };
-
-    fetch(`/data/${currentIndex}/${number}`, {
+    fetch(`/data/${currentIndex}/${number}?currentYear=${currentYear}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(content),
@@ -172,7 +171,6 @@ yearButtons.forEach((year) => {
         updateMonthChart();
         updateListedShifts();
         updatePaysheet();
-        updateYearStats();
       })
       .catch((error) => {
         console.error("Error fetching data from server:", error);
@@ -231,8 +229,6 @@ document.querySelectorAll(".nav button").forEach((button) => {
 
     content.style.display = "flex";
     localStorage.setItem("pageId", pageId);
-
-    updateYearStats();
   });
 });
 
@@ -312,7 +308,7 @@ function loadCell() {
   fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-      let monthData = data[currentIndex];
+      let monthData = data[currentIndex][0];
       let tdElements = document.querySelectorAll("#calendar td");
       let previewElements = document.querySelectorAll("#preview_calendar td");
       let shiftCount = document.getElementById("shiftCount");
@@ -376,7 +372,7 @@ function loadCell() {
     })
     .catch((error) => console.error("Error:", error));
 
-  fetch("/weekNo")
+  fetch(`/weekNo?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
       let weekNoInput = document.getElementById("weekNoInput");
@@ -386,7 +382,8 @@ function loadCell() {
       let week5 = document.getElementById("week5");
       let week6 = document.getElementById("week6");
 
-      let weekNumbers = data[currentIndex];
+      let weekNumbers = data[currentIndex][1];
+
       weekNoInput.value = weekNumbers.week1;
       week2.value = weekNumbers.week2;
       week3.value = weekNumbers.week3;
@@ -425,7 +422,7 @@ let addShift = (event) => {
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
     if (deleteActive === false) {
-      if (sickActive === false) {
+      if (sickActive === false && holyActive === false) {
         if (!isNaN(currentIndex)) {
           if (document.getElementById(tdId).classList == "off") {
             let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
@@ -521,7 +518,6 @@ let addShift = (event) => {
               .catch((error) => console.error("Error:", error));
           }
           updateListedShifts();
-          loadCell();
         }
       }
     } else {
@@ -560,9 +556,9 @@ Array.from(tdElements).forEach((td) => {
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML =
-            data[currentIndex][number].start +
+            data[currentIndex][0][number].start +
             " " +
-            data[currentIndex][number].end;
+            data[currentIndex][0][number].end;
         });
     }
   });
@@ -582,7 +578,7 @@ Array.from(tdElements).forEach((td) => {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML = data[currentIndex][number].time + "h";
+          td.innerHTML = data[currentIndex][0][number].time + "h";
         });
     }
   });
@@ -637,14 +633,15 @@ nextBtn.addEventListener("click", function () {
 
 document.onkeydown = checkKey;
 function checkKey(e) {
-  e = e || window.event;
-
-  if (e.keyCode == "37") {
-    changeMonth("prev");
-    yearChart.update();
-  } else if (e.keyCode == "39") {
-    changeMonth("next");
-    yearChart.update();
+  if (!editActive) {
+    e = e || window.event;
+    if (e.keyCode == "37") {
+      changeMonth("prev");
+      yearChart.update();
+    } else if (e.keyCode == "39") {
+      changeMonth("next");
+      yearChart.update();
+    }
   }
 }
 
@@ -703,30 +700,30 @@ function updatePaysheet() {
 
   unit1.innerHTML = 0;
 
-  fetch("/paysheetRates")
+  fetch(`/paysheetRates?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-      rate1.value = data[currentIndex].baseRate;
-      rate2.value = data[currentIndex].eveningRate;
-      rate3.value = data[currentIndex].saturdayRate;
-      rate4.value = data[currentIndex].sundayRate;
-      sickUnit.value = data[currentIndex].monthSickHours;
-      sickRate.value = data[currentIndex].baseRate;
-      rate5.value = data[currentIndex].pensionRate;
-      payoutPerk.value = data[currentIndex].monthPayoutPerk;
-      rate7.value = data[currentIndex].lbcRate;
-      rate8.value = data[currentIndex].ataxRate;
-      amount9.value = data[currentIndex].monthPerks;
-      rate11.value = data[currentIndex].additionalPerkRate;
-      rate13.value = data[currentIndex].pfaRate;
+      rate1.value = data[currentIndex][2].baseRate;
+      rate2.value = data[currentIndex][2].eveningRate;
+      rate3.value = data[currentIndex][2].saturdayRate;
+      rate4.value = data[currentIndex][2].sundayRate;
+      sickUnit.value = data[currentIndex][2].monthSickHours;
+      sickRate.value = data[currentIndex][2].baseRate;
+      rate5.value = data[currentIndex][2].pensionRate;
+      payoutPerk.value = data[currentIndex][2].monthPayoutPerk;
+      rate7.value = data[currentIndex][2].lbcRate;
+      rate8.value = data[currentIndex][2].ataxRate;
+      amount9.value = data[currentIndex][2].monthPerks;
+      rate11.value = data[currentIndex][2].additionalPerkRate;
+      rate13.value = data[currentIndex][2].pfaRate;
 
       let accumulatedPerk = document.getElementById("accumulatedAddPerk");
       let accumulatedHoliday = document.getElementById("accumulatedHoliday");
       let sum1 = 0;
       let sum2 = 0;
       for (let i = 0; i <= currentIndex; i++) {
-        sum1 += parseInt(data[i].monthAdditionalPerk);
-        sum2 += parseInt(data[i].monthHoliday);
+        sum1 += parseInt(data[i][2].monthAdditionalPerk);
+        sum2 += parseInt(data[i][2].monthHoliday);
       }
       accumulatedPerk.innerHTML = "$" + sum1;
       accumulatedHoliday.innerHTML = "$" + sum2;
@@ -743,12 +740,12 @@ function updatePaysheet() {
       let eveningTime = 0;
       let saturdayTime = 0;
       let sundayTime = 0;
-      for (let i = 0; i < data[currentIndex].length; i++) {
-        if (data[currentIndex][i] !== null) {
-          normalTime += data[currentIndex][i].time;
-          eveningTime += data[currentIndex][i].evening;
-          saturdayTime += data[currentIndex][i].saturday;
-          sundayTime += data[currentIndex][i].sunday;
+      for (let i = 0; i < data[currentIndex][0].length; i++) {
+        if (data[currentIndex][0][i] !== null) {
+          normalTime += data[currentIndex][0][i].time;
+          eveningTime += data[currentIndex][0][i].evening;
+          saturdayTime += data[currentIndex][0][i].saturday;
+          sundayTime += data[currentIndex][0][i].sunday;
         }
 
         value1.innerHTML = normalTime.toFixed(2) + " h";
@@ -866,8 +863,10 @@ function updatePaysheet() {
       perk_preview.innerHTML = "$ " + amount9.value;
 
       value5.innerHTML = "$ " + money.value;
+    })
+    .catch((error) => {
+      console.error("Error fetching data from server:", error);
     });
-  updateYearStats();
 }
 
 let donutChart = new Chart("progress_circle", {
@@ -965,60 +964,6 @@ function updateMonthChart(monthData1) {
   monthChart.update();
 }
 
-function saveRates() {
-  let baseRate = document.getElementById("baseRate");
-  let eveningRate = document.getElementById("eveningRate");
-  let saturdayRate = document.getElementById("saturdayRate");
-  let sundayRate = document.getElementById("sundayRate");
-  let sickHours = document.getElementById("sickUnit");
-  let pensionRate = document.getElementById("rate5");
-  let payoutPerk = document.getElementById("payoutPerk");
-  let lbcRate = document.getElementById("rate7");
-  let ataxRate = document.getElementById("rate8");
-  let perks = document.getElementById("perk9");
-  let additionalPerkRate = document.getElementById("rate11");
-  let pfaRate = document.getElementById("rate13");
-  let monthPay = document.getElementById("amount14");
-  let monthPension = document.getElementById("amount5");
-  let monthATP = document.getElementById("amount6");
-  let monthAIncome = document.getElementById("ground7");
-  let monthLbc = document.getElementById("amount7");
-  let monthAtax = document.getElementById("amount8");
-  let monthAdditionalPerk = document.getElementById("amount11");
-  let monthHoliday = document.getElementById("amount12");
-
-  let content = {
-    baseRate: baseRate.value,
-    eveningRate: eveningRate.value,
-    saturdayRate: saturdayRate.value,
-    sundayRate: sundayRate.value,
-    pensionRate: pensionRate.value,
-    lbcRate: lbcRate.value,
-    ataxRate: ataxRate.value,
-    additionalPerkRate: additionalPerkRate.value,
-    pfaRate: pfaRate.value,
-    monthPerks: perks.value,
-    monthPayoutPerk: payoutPerk.value,
-    monthSickHours: sickHours.value,
-    monthPay: monthPay.value,
-    monthAIncome: monthAIncome.textContent,
-    monthATP: monthATP.value,
-    monthPension: monthPension.value,
-    monthLbc: monthLbc.value,
-    monthAtax: monthAtax.value,
-    monthAdditionalPerk: monthAdditionalPerk.value,
-    monthHoliday: monthHoliday.value,
-  };
-
-  fetch("/paysheetRates", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content, currentIndex }),
-  });
-}
-
 function updateListedShifts() {
   let shiftList = document.getElementById("shiftList");
   shiftList.innerHTML = "";
@@ -1026,7 +971,7 @@ function updateListedShifts() {
   fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-      for (let i = 0; i < data[currentIndex].length; i++) {
+      for (let i = 0; i < data[currentIndex][0].length; i++) {
         let listedShiftLi = document.createElement("LI");
         let listedShiftDiv = document.createElement("DIV");
         let listedShiftDay = document.createElement("SPAN");
@@ -1064,15 +1009,15 @@ function updateListedShifts() {
           day = "Mon";
         }
 
-        if (data[currentIndex][i]) {
+        if (data[currentIndex][0][i]) {
           listedShiftDay.innerHTML = day;
-          listedShiftHour.innerHTML = data[currentIndex][i].time;
-          listedShiftStart.innerHTML = data[currentIndex][i].start;
-          listedShiftEnd.innerHTML = data[currentIndex][i].end;
-          listedShiftLunch.innerHTML = data[currentIndex][i].lunch;
-          listedShiftEvening.innerHTML = data[currentIndex][i].evening;
-          listedShiftSaturday.innerHTML = data[currentIndex][i].saturday;
-          listedShiftSunday.innerHTML = data[currentIndex][i].sunday;
+          listedShiftHour.innerHTML = data[currentIndex][0][i].time;
+          listedShiftStart.innerHTML = data[currentIndex][0][i].start;
+          listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
+          listedShiftLunch.innerHTML = data[currentIndex][0][i].lunch;
+          listedShiftEvening.innerHTML = data[currentIndex][0][i].evening;
+          listedShiftSaturday.innerHTML = data[currentIndex][0][i].saturday;
+          listedShiftSunday.innerHTML = data[currentIndex][0][i].sunday;
         } else {
           listedShiftDay.innerHTML = day;
           listedShiftHour.innerHTML = "0";
@@ -1121,7 +1066,7 @@ function editShift(event) {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          let shiftToEdit = data[currentIndex][number];
+          let shiftToEdit = data[currentIndex][0][number];
           editData1.value = shiftToEdit.start;
           editData2.value = shiftToEdit.end;
           editData3.value = shiftToEdit.time;
@@ -1201,92 +1146,10 @@ function holyShift(event) {
         .then((data) => {})
         .catch((error) => console.error("Error:", error));
     }
+    updateListedShifts();
+    loadCell();
   }
 }
-
-function updateYearStats() {
-  let yearHours = document.getElementById("yearHours");
-  let yearEvening = document.getElementById("yearEvening");
-  let yearSaturday = document.getElementById("yearSaturday");
-  let yearSunday = document.getElementById("yearSunday");
-  let yearBreak = document.getElementById("yearBreak");
-  let yearMoney = document.getElementById("yearMoney");
-  let yearAIncome = document.getElementById("yearAIncome");
-  let yearPerks = document.getElementById("yearPerks");
-  let yearSick = document.getElementById("yearSick");
-  let yearTax = document.getElementById("yearTax");
-  let yearATP = document.getElementById("yearATP");
-  let yearLBC = document.getElementById("yearLBC");
-  let yearAdditionalPerk = document.getElementById("yearAdditionalPerk");
-  let yearHoliday = document.getElementById("yearHoliday");
-  let sumMoney = 0;
-  let sumAIncome = 0;
-  let sumPerks = 0;
-  let sumHours = 0;
-  let sumEvening = 0;
-  let sumSaturday = 0;
-  let sumSunday = 0;
-  let sumBreak = 0;
-  let sumSick = 0;
-  let sumTax = 0;
-  let sumATP = 0;
-  let sumPension = 0;
-  let sumLBC = 0;
-  let sumAdditionalPerk = 0;
-  let sumHoliday = 0;
-
-  fetch("/paysheetRates")
-    .then((response) => response.json())
-    .then((data) => {
-      for (let i = 0; i < 12; i++) {
-        sumMoney += parseInt(data[i].monthPay);
-        sumAIncome += parseInt(data[i].monthAIncome);
-        sumPerks += parseInt(data[i].monthPerks);
-        sumTax += parseInt(data[i].monthAtax);
-        sumLBC += parseInt(data[i].monthLbc);
-        sumATP += parseInt(data[i].monthATP);
-        sumPension += parseInt(data[i].monthPension);
-        sumAdditionalPerk +=
-          parseInt(data[i].monthAdditionalPerk) * 0.92 * 0.62;
-
-        sumHoliday += parseInt(data[i].monthHoliday) * 0.92 * 0.62;
-        sumSick += parseInt(data[i].monthSickHours);
-      }
-      yearMoney.innerHTML = "$ " + sumMoney;
-      yearAIncome.innerHTML = "$ " + sumAIncome;
-      yearPerks.innerHTML = "$ " + sumPerks;
-      yearTax.innerHTML = "$ " + sumTax;
-      yearLBC.innerHTML = "$ " + sumLBC;
-      yearAdditionalPerk.innerHTML = "$ " + sumAdditionalPerk.toFixed(0);
-      yearHoliday.innerHTML = "$ " + sumHoliday.toFixed(0);
-      yearATP.innerHTML = "$ " + sumATP.toFixed(0);
-      yearPension.innerHTML = "$ " + sumPension.toFixed(0);
-      yearSick.innerHTML = sumSick + "h";
-    });
-
-  fetch(`/data?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      for (let i = 0; i < 12; i++) {
-        for (let j = 0; j < 42; j++) {
-          if (data[i][j] !== null) {
-            sumHours += data[i][j].time;
-            sumEvening += data[i][j].evening;
-            sumSaturday += data[i][j].saturday;
-            sumSunday += data[i][j].sunday;
-            sumBreak += data[i][j].lunch;
-          }
-        }
-      }
-      yearHours.innerHTML = sumHours + " h";
-      yearEvening.innerHTML = sumEvening + " h";
-      yearSaturday.innerHTML = sumSaturday + " h";
-      yearSunday.innerHTML = sumSunday + " h";
-      yearBreak.innerHTML = sumBreak + " h";
-    });
-}
-
-updateYearStats();
 
 let graphNames = [
   "Normal hours",
@@ -1299,77 +1162,6 @@ let graphNames = [
   "Perks",
   "Sick hours",
 ];
-
-// let yearChart = new Chart("progress_year", {
-//   type: "line",
-//   data: {
-//     labels: [
-//       "Jan",
-//       "Feb",
-//       "Mar",
-//       "Apr",
-//       "May",
-//       "Jun",
-//       "Jul",
-//       "Aug",
-//       "Sep",
-//       "Oct",
-//       "Nov",
-//       "Dec",
-//     ],
-//     datasets: [
-//       {
-//         data: [],
-//         tension: 0.1,
-//       },
-//     ],
-//   },
-//   options: {
-//     borderColor: "#3498db",
-//     borderWidth: 5,
-//     pointStyle: false,
-//     scales: {
-//       y: {
-//         display: false,
-//         grid: {
-//           display: false,
-//         },
-//       },
-//       x: {
-//         display: true,
-//         grid: {
-//           display: true,
-//         },
-//         ticks: {
-//           color: (context) => {
-//             if (context.index === currentIndex) {
-//               return "#3498db";
-//             } else {
-//               return "#717577";
-//             }
-//           },
-//           maxRotation: 0,
-//           font: {
-//             weight: (context) => {
-//               if (context.index === currentIndex) {
-//                 return "bold";
-//               } else {
-//                 return "normal";
-//               }
-//             },
-//           },
-//         },
-//       },
-//     },
-//     plugins: {
-//       legend: {
-//         display: false,
-//       },
-//     },
-//     responsive: true,
-//     maintainAspectRatio: false,
-//   },
-// });
 
 let yearChart = new Chart("progress_year", {
   type: "bar",
@@ -1432,117 +1224,6 @@ let yearChart = new Chart("progress_year", {
 });
 
 let allGraphs = [];
-
-changeGraph();
-
-function changeGraph(direction) {
-  allGraphs = [];
-
-  let graph_center = document.getElementById("graph_center");
-  let graph_back = document.getElementById("graph_back");
-  let graph_next = document.getElementById("graph_next");
-  if (direction == "prev") {
-    if (currentGraph > 0) {
-      currentGraph--;
-    }
-  }
-  if (direction == "next") {
-    if (currentGraph < 8) {
-      currentGraph++;
-    }
-  }
-
-  if (currentGraph == 0) {
-    graph_back.style.opacity = 0;
-    graph_back.style.pointerEvents = "none";
-  } else {
-    graph_back.style.opacity = 1;
-    graph_back.style.pointerEvents = "auto";
-  }
-  if (currentGraph == 8) {
-    graph_next.style.opacity = 0;
-    graph_next.style.pointerEvents = "none";
-  } else {
-    graph_next.style.opacity = 1;
-    graph_next.style.pointerEvents = "auto";
-  }
-
-  let yearHours = [];
-  let yearEvening = [];
-  let yearSaturday = [];
-  let yearSunday = [];
-  let yearBreaks = [];
-  let yearMoney = [];
-  let yearAverage = [];
-  let yearPerks = [];
-  let yearSickHours = [];
-
-  Promise.all([
-    fetch(`/data?currentYear=${currentYear}`).then((response) =>
-      response.json()
-    ),
-    fetch("/paysheetRates").then((response) => response.json()),
-  ]).then(([data, paysheetRates]) => {
-    // Process data from the first fetch call
-    for (let k = 0; k < 12; k++) {
-      let sum_yearHours = 0;
-      let sum_yearEvening = 0;
-      let sum_yearSaturday = 0;
-      let sum_yearSunday = 0;
-      let sum_yearBreaks = 0;
-      for (let j = 0; j < 42; j++) {
-        if (data[k][j] !== null) {
-          sum_yearHours += data[k][j].time;
-          sum_yearEvening += data[k][j].evening;
-          sum_yearSaturday += data[k][j].saturday;
-          sum_yearSunday += data[k][j].sunday;
-          sum_yearBreaks += data[k][j].lunch;
-        }
-      }
-      yearHours.push(sum_yearHours);
-      yearEvening.push(sum_yearEvening);
-      yearSaturday.push(sum_yearSaturday);
-      yearSunday.push(sum_yearSunday);
-      yearBreaks.push(sum_yearBreaks);
-      yearAverage.push((paysheetRates[k].monthPay / sum_yearHours).toFixed(0));
-    }
-
-    // Process data from the second fetch call (paysheetRates)
-    for (let i = 0; i < 12; i++) {
-      yearMoney.push(parseInt(paysheetRates[i].monthPay));
-      yearPerks.push(parseInt(paysheetRates[i].monthPerks));
-      yearSickHours.push(paysheetRates[i].monthSickHours);
-    }
-
-    allGraphs.push(yearHours);
-    allGraphs.push(yearEvening);
-    allGraphs.push(yearSaturday);
-    allGraphs.push(yearSunday);
-    allGraphs.push(yearBreaks);
-    allGraphs.push(yearMoney);
-    allGraphs.push(yearAverage);
-    allGraphs.push(yearPerks);
-    allGraphs.push(yearSickHours);
-
-    // Update the chart here, inside the Promise.all().then() block
-    let yearData = allGraphs[currentGraph];
-    yearChart.data.datasets[0].data = yearData;
-    yearChart.update();
-
-    // Update button text
-    graph_back.innerHTML = graphNames[currentGraph - 1];
-    graph_center.innerHTML = graphNames[currentGraph];
-    graph_next.innerHTML = graphNames[currentGraph + 1];
-  });
-}
-
-graph_back.addEventListener("click", function () {
-  changeGraph("prev");
-});
-
-graph_next.addEventListener("click", function () {
-  changeGraph("next");
-});
 
 donutChart.update();
 yearChart.update();

@@ -515,14 +515,14 @@
                             <div id="paysheetContainer">
                                 <table>
                                     <tr>
-                                        <th class="specification">Specification</th>
-                                        <th class="ground">Ground</th>
-                                        <th class="unit">Unit</th>
-                                        <th class="rate">Rate</th>
-                                        <th class="amount">Amount</th>
+                                        <th class="specification">Lønart</th>
+                                        <th class="ground">Grundlag</th>
+                                        <th class="unit">Antal</th>
+                                        <th class="rate">Sats</th>
+                                        <th class="amount">Beløb</th>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="base">Normal hours</th>
+                                        <th class="specification" id="base">Timeløn</th>
                                         <td class="ground"></td>
                                         <td class="unit" id="totalTime"></td>
                                         <td class="rate">
@@ -531,7 +531,7 @@
                                         <td class="amount"><input id="baseAmount"></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="evening">Evening hours</th>
+                                        <th class="specification" id="evening">Forskudttimer aften</th>
                                         <td class="ground"></td>
                                         <td class="unit" id="totalEvening"></td>
                                         <td class="rate">
@@ -540,7 +540,7 @@
                                         <td class="amount"><input id="eveningAmount" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="saturday">Saturday hours</th>
+                                        <th class="specification" id="saturday">Forskudttimer lørdag</th>
                                         <td class="ground"></td>
                                         <td class="unit" id="totalSaturday"></td>
                                         <td class="rate">
@@ -549,7 +549,7 @@
                                         <td class="amount"><input id="saturdayAmount" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="sunday">Sunday hours</th>
+                                        <th class="specification" id="sunday">Forskudttimer søndag</th>
                                         <td class="ground"></td>
                                         <td class="unit" id="totalSunday"></td>
                                         <td class="rate">
@@ -558,10 +558,10 @@
                                         <td class="amount"><input id="sundayAmount" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="sick">Sick hours</th>
+                                        <th class="specification" id="sick">Sygdom med betaling</th>
                                         <td class="ground"></td>
                                         <td class="unit">
-                                            <input id="sickUnit" value="0.00" onchange="saveRates();">
+                                            <input id="sickUnit" value="0.00">
                                         </td>
                                         <td class="rate"><input id="sickRate" value="0.00"></td>
                                         <td class=" amount">
@@ -569,7 +569,16 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th class=" specification">Pension</th>
+                                        <th class="specification" id="payoutHoliday">Udbetaling af feriepenge</th>
+                                        <td class="ground"></td>
+                                        <td class="unit"></td>
+                                        <td class="rate"></td>
+                                        <td class="amount">
+                                            <input id="payoutHolidayAmount" value="0.00">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class=" specification">Personbidrag</th>
                                         <td class="ground" id="ground5"></td>
                                         <td class="unit"></td>
                                         <td class="rate">
@@ -578,7 +587,7 @@
                                         <td class="amount"><input id="amount5" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="sunday">Payout perk</th>
+                                        <th class="specification" id="sunday">Udbetaling af fritvalgskonto</th>
                                         <td class="ground"></td>
                                         <td class="unit"></td>
                                         <td class="rate"></td>
@@ -587,14 +596,14 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">ATP</th>
+                                        <th class="specification">ATP bidrag</th>
                                         <td class="ground"></td>
                                         <td class="unit"></td>
                                         <td class="rate"></td>
                                         <td class="amount"><input id="amount6" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">LBC</th>
+                                        <th class="specification">Arbejdsmarkedsbidrag</th>
                                         <td class="ground" id="ground7"></td>
                                         <td class="unit"></td>
                                         <td class="rate">
@@ -603,7 +612,7 @@
                                         <td class="amount"><input id="amount7" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">A-Tax</th>
+                                        <th class="specification">A-skat</th>
                                         <td class="ground" id="ground8"></td>
                                         <td class="unit"></td>
                                         <td class="rate">
@@ -612,23 +621,23 @@
                                         <td class="amount"><input id="amount8" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">Perks</th>
+                                        <th class="specification">Personalerabat</th>
                                         <td class="ground"></td>
                                         <td class="unit"></td>
                                         <td class="rate"></td>
                                         <td class="amount">
-                                            <input id="perk9" value="0.00" onchange="saveRates();">
+                                            <input id="perk9" value="0.00">
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">P.FOR Aarhus</th>
+                                        <th class="specification">Personaleforening</th>
                                         <td class="ground"></td>
                                         <td class="unit"></td>
                                         <td class="rate"></td>
                                         <td class="amount"><input id="amount10" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification upperBorder">Additional Perks</th>
+                                        <th class="specification upperBorder">Opsaret fritvalgsaftale</th>
                                         <td class="ground upperBorder" id="ground11"></td>
                                         <td class="unit upperBorder"></td>
                                         <td class="rate upperBorder">
@@ -637,14 +646,14 @@
                                         <td class="amount upperBorder"><input id="amount11" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification">Holiday</th>
+                                        <th class="specification">Opsparet feriepenge</th>
                                         <td class="ground"></td>
                                         <td class="unit"></td>
                                         <td class="rate"></td>
                                         <td class="amount"><input id="amount12"></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification lowerBorder">PFA</th>
+                                        <th class="specification lowerBorder">Personbidrag firma</th>
                                         <td class="ground lowerBorder" id="ground13"></td>
                                         <td class="unit lowerBorder"></td>
                                         <td class="rate lowerBorder">
@@ -653,7 +662,7 @@
                                         <td class="amount lowerBorder"><input id="amount13" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification money">Paycheck</th>
+                                        <th class="specification money">Total</th>
                                         <td class="ground money"></td>
                                         <td class="unit money"></td>
                                         <td class="rate money"></td>
@@ -665,8 +674,6 @@
                         </div>
                     </div>
                     <div class="content_section right page_section">
-                        <button id="reloadButton" onclick="updatePaysheet(); saveRates();"><i
-                                class=" fa-solid fa-arrows-rotate fa-2xl"></i></button>
                         <div id="paysheetRight">
                             <div id="paysheetRightContent">
                                 <div class="accumulated">

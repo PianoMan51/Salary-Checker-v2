@@ -37,7 +37,7 @@ app.get("/home.css", (req, res) => {
 
 app.post("/data", (req, res) => {
   const { tdId, content, currentIndex } = req.body;
-  const currentYear = req.query.currentYear || "2024";
+  const currentYear = req.query.currentYear;
   let shiftTimesFilename = currentYear + "_shiftTimes.json";
 
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
@@ -48,7 +48,7 @@ app.post("/data", (req, res) => {
     }
 
     let jsonData = JSON.parse(data);
-    jsonData[currentIndex][parseInt(tdId.slice(2))] = content;
+    jsonData[currentIndex][0][parseInt(tdId.slice(2))] = content;
 
     fs.writeFile(
       shiftTimesFilename,
@@ -68,7 +68,7 @@ app.post("/data", (req, res) => {
 });
 
 app.get("/data", (req, res) => {
-  const currentYear = req.query.currentYear || "2024";
+  const currentYear = req.query.currentYear;
   let shiftTimesFilename = currentYear + "_shiftTimes.json";
 
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
@@ -84,7 +84,7 @@ app.get("/data", (req, res) => {
 });
 
 app.put("/data/:currentIndex/:number", (req, res) => {
-  const currentYear = req.query.currentYear || "2024";
+  const currentYear = req.query.currentYear;
   let shiftTimesFilename = currentYear + "_shiftTimes.json";
 
   let { number } = req.params;
@@ -100,10 +100,7 @@ app.put("/data/:currentIndex/:number", (req, res) => {
     currentIndex,
   } = req.body;
 
-  // Convert the number parameter to an integer
   number = parseInt(number);
-
-  // Convert time, lunch, evening, saturday, and sunday to floats
   time = parseFloat(time);
   lunch = parseFloat(lunch);
   evening = parseFloat(evening);
@@ -118,13 +115,7 @@ app.put("/data/:currentIndex/:number", (req, res) => {
     }
 
     let jsonData = JSON.parse(data);
-
-    // Check if jsonData[currentIndex] exists and create a new array if it doesn't
-    if (!jsonData[currentIndex]) {
-      jsonData[currentIndex] = [];
-    }
-
-    jsonData[currentIndex][number] = {
+    jsonData[currentIndex][0][number] = {
       start,
       end,
       time,
@@ -154,8 +145,9 @@ app.put("/data/:currentIndex/:number", (req, res) => {
 
 app.post("/weekNo", (req, res) => {
   const { content, currentIndex } = req.body;
-  let weekNumbers = "weekNumbers.json";
-  fs.readFile(weekNumbers, "utf8", (err, data) => {
+  const currentYear = req.query.currentYear;
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");
@@ -163,23 +155,29 @@ app.post("/weekNo", (req, res) => {
     }
 
     let jsonData = JSON.parse(data);
-    jsonData[currentIndex] = content;
+    jsonData[currentIndex][1] = content;
 
-    fs.writeFile(weekNumbers, JSON.stringify(jsonData), "utf8", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error writing to JSON file.");
-        return;
+    fs.writeFile(
+      shiftTimesFilename,
+      JSON.stringify(jsonData),
+      "utf8",
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error writing to JSON file.");
+          return;
+        }
+
+        res.json({ message: "Shift added successfully." });
       }
-
-      res.json({ message: "Shift added successfully." });
-    });
+    );
   });
 });
 
 app.get("/weekNo", (req, res) => {
-  let weekNumbers = "weekNumbers.json";
-  fs.readFile(weekNumbers, "utf8", (err, data) => {
+  const currentYear = req.query.currentYear;
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");
@@ -188,88 +186,25 @@ app.get("/weekNo", (req, res) => {
 
     let jsonData = JSON.parse(data);
     res.json(jsonData);
-  });
-});
-
-app.post("/paysheetRates", (req, res) => {
-  const { content, currentIndex } = req.body;
-  let paysheet = "paysheetRates.json";
-  fs.readFile(paysheet, "utf8", (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error reading JSON file.");
-      return;
-    }
-
-    let jsonData = JSON.parse(data);
-    jsonData[currentIndex] = content;
-
-    fs.writeFile(paysheet, JSON.stringify(jsonData), "utf8", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error writing to JSON file.");
-        return;
-      }
-
-      res.json({ message: "Shift added successfully." });
-    });
   });
 });
 
 app.get("/paysheetRates", (req, res) => {
-  let paysheet = "paysheetRates.json";
-  fs.readFile(paysheet, "utf8", (err, data) => {
+  const currentYear = req.query.currentYear;
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error reading JSON file.");
       return;
     }
-
-    let jsonData = JSON.parse(data);
-    res.json(jsonData);
-  });
-});
-
-app.post("/paysheetAmounts", (req, res) => {
-  const { content, currentIndex } = req.body;
-  let paysheet = "paysheetAmounts.json";
-  fs.readFile(paysheet, "utf8", (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error reading JSON file.");
-      return;
-    }
-
-    let jsonData = JSON.parse(data);
-    jsonData[currentIndex] = content;
-
-    fs.writeFile(paysheet, JSON.stringify(jsonData), "utf8", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error writing to JSON file.");
-        return;
-      }
-
-      res.json({ message: "Shift added successfully." });
-    });
-  });
-});
-
-app.get("/paysheetAmounts", (req, res) => {
-  let paysheet = "paysheetAmounts.json";
-  fs.readFile(paysheet, "utf8", (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error reading JSON file.");
-      return;
-    }
-
-    let jsonData = JSON.parse(data);
-    res.json(jsonData);
+    const paysheetRatesData = JSON.parse(data);
+    res.json(paysheetRatesData);
   });
 });
 
 // Start the server
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
