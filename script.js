@@ -156,6 +156,7 @@ yearButtons.forEach((year) => {
     currentYear = year.innerHTML;
     localStorage.setItem("currentYear", currentYear);
 
+
     yearButtons.forEach((otherYear) => {
       otherYear.style.backgroundColor = "var(--gray)";
       otherYear.classList.remove("active");
@@ -171,6 +172,7 @@ yearButtons.forEach((year) => {
         updateMonthChart();
         updateListedShifts();
         updatePaysheet();
+        updateYearStats();
       })
       .catch((error) => {
         console.error("Error fetching data from server:", error);
@@ -304,6 +306,13 @@ document.querySelectorAll(".quickSelect").forEach((quickSelect) => {
   });
 });
 
+let week1 = document.getElementById("week1");
+let week2 = document.getElementById("week2");
+let week3 = document.getElementById("week3");
+let week4 = document.getElementById("week4");
+let week5 = document.getElementById("week5");
+let week6 = document.getElementById("week6");
+
 function loadCell() {
   fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
@@ -375,16 +384,11 @@ function loadCell() {
   fetch(`/weekNo?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-      let weekNoInput = document.getElementById("weekNoInput");
-      let week2 = document.getElementById("week2");
-      let week3 = document.getElementById("week3");
-      let week4 = document.getElementById("week4");
-      let week5 = document.getElementById("week5");
-      let week6 = document.getElementById("week6");
+
 
       let weekNumbers = data[currentIndex][1];
 
-      weekNoInput.value = weekNumbers.week1;
+      week1.value = weekNumbers.week1;
       week2.value = weekNumbers.week2;
       week3.value = weekNumbers.week3;
       week4.value = weekNumbers.week4;
@@ -394,6 +398,24 @@ function loadCell() {
 
   updatePaysheet();
   updateListedShifts();
+}
+
+function updateWeekNumbers() {
+  let content = {
+    week1: week1.value,
+    week2: week2.value,
+    week3: week3.value,
+    week4: week4.value,
+    week5: week5.value,
+    week6: week6.value,
+  };
+  fetch(`/weekNo?currentYear=${currentYear}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ content, currentIndex }),
+  });
 }
 
 let calculateWeekday = (number) => {
@@ -421,104 +443,103 @@ let addShift = (event) => {
   let tdId = event.target.id;
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
-    if (deleteActive === false) {
-      if (sickActive === false && holyActive === false) {
-        if (!isNaN(currentIndex)) {
-          if (document.getElementById(tdId).classList == "off") {
-            let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
-            let eveningTotal = 0;
-            let eveningHours = 0;
+    if (deleteActive === false && sickActive === false && holyActive === false && editActive === false) {
+      if (!isNaN(currentIndex)) {
+        if (document.getElementById(tdId).classList == "off") {
+          let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
+          let eveningTotal = 0;
+          let eveningHours = 0;
 
-            //// EVENING ////
-            if (weekday !== "Saturday" && weekday !== "Sunday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-              let eveningStart = new Date(`2000-01-01T18:00:00`);
+          //// EVENING ////
+          if (weekday !== "Saturday" && weekday !== "Sunday") {
+            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+            let eveningStart = new Date(`2000-01-01T18:00:00`);
 
-              if (shiftEnd <= eveningStart) {
-                // If the shift ends before or exactly at 6 pm, no extra hours are worked on evening
-                eveningHours = 0;
-              } else if (shiftStart >= eveningStart) {
-                // If the shift starts after or exactly at 6 pm, all hours of the shift are considered extra
-                eveningTotal = shiftEnd - shiftStart;
-                eveningHours =
-                  eveningTotal / (1000 * 60 * 60) -
-                  calculateLunch(start.value, end.value);
-              } else {
-                // If the shift starts before 6 pm and ends after 6 pm, calculate the extra hours worked after 3 pm
-                eveningTotal = shiftEnd - eveningStart;
-                eveningHours =
-                  eveningTotal / (1000 * 60 * 60) -
-                  calculateLunch(start.value, end.value);
-              }
-            }
-
-            //// SATURDAY ////
-            let saturdayTotal = 0;
-            let saturdayHours = 0;
-            if (weekday == "Saturday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-              let saturdayStart = new Date(`2000-01-01T15:00:00`);
-
-              if (shiftEnd <= saturdayStart) {
-                // If the shift ends before or exactly at 3 pm, no extra hours are worked on Saturday
-                saturdayHours = 0;
-                saturdayTotal = shiftEnd - shiftStart;
-              } else if (shiftStart >= saturdayStart) {
-                // If the shift starts after or exactly at 3 pm, all hours of the shift are considered extra
-                saturdayTotal = shiftEnd - shiftStart;
-                saturdayHours =
-                  saturdayTotal / (1000 * 60 * 60) -
-                  calculateLunch(start.value, end.value);
-              } else {
-                // If the shift starts before 3 pm and ends after 3 pm, calculate the extra hours worked after 3 pm
-                saturdayTotal = shiftEnd - saturdayStart;
-                saturdayHours =
-                  saturdayTotal / (1000 * 60 * 60) -
-                  calculateLunch(start.value, end.value);
-              }
-            }
-
-            //// SUNDAY ////
-            let sundayHours = 0;
-            let sundayTotal = 0;
-            if (weekday == "Sunday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-              sundayTotal = shiftEnd - shiftStart;
-              sundayHours =
-                sundayTotal / (1000 * 60 * 60) -
+            if (shiftEnd <= eveningStart) {
+              // If the shift ends before or exactly at 6 pm, no extra hours are worked on evening
+              eveningHours = 0;
+            } else if (shiftStart >= eveningStart) {
+              // If the shift starts after or exactly at 6 pm, all hours of the shift are considered extra
+              eveningTotal = shiftEnd - shiftStart;
+              eveningHours =
+                eveningTotal / (1000 * 60 * 60) -
+                calculateLunch(start.value, end.value);
+            } else {
+              // If the shift starts before 6 pm and ends after 6 pm, calculate the extra hours worked after 3 pm
+              eveningTotal = shiftEnd - eveningStart;
+              eveningHours =
+                eveningTotal / (1000 * 60 * 60) -
                 calculateLunch(start.value, end.value);
             }
-
-            let startValue = document.getElementById("startTime").value;
-            let endValue = document.getElementById("endTime").value;
-            let content = {
-              start: startValue,
-              end: endValue,
-              time: calculateTimeDifference(start.value, end.value),
-              lunch: calculateLunch(start.value, end.value),
-              evening: eveningHours,
-              saturday: saturdayHours,
-              sunday: sundayHours,
-              state: 0,
-            };
-            fetch(`/data?currentYear=${currentYear}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ tdId, content, currentIndex }),
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                loadCell();
-              })
-              .catch((error) => console.error("Error:", error));
           }
-          updateListedShifts();
+
+          //// SATURDAY ////
+          let saturdayTotal = 0;
+          let saturdayHours = 0;
+          if (weekday == "Saturday") {
+            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+            let saturdayStart = new Date(`2000-01-01T15:00:00`);
+
+            if (shiftEnd <= saturdayStart) {
+              // If the shift ends before or exactly at 3 pm, no extra hours are worked on Saturday
+              saturdayHours = 0;
+              saturdayTotal = shiftEnd - shiftStart;
+            } else if (shiftStart >= saturdayStart) {
+              // If the shift starts after or exactly at 3 pm, all hours of the shift are considered extra
+              saturdayTotal = shiftEnd - shiftStart;
+              saturdayHours =
+                saturdayTotal / (1000 * 60 * 60) -
+                calculateLunch(start.value, end.value);
+            } else {
+              // If the shift starts before 3 pm and ends after 3 pm, calculate the extra hours worked after 3 pm
+              saturdayTotal = shiftEnd - saturdayStart;
+              saturdayHours =
+                saturdayTotal / (1000 * 60 * 60) -
+                calculateLunch(start.value, end.value);
+            }
+          }
+
+          //// SUNDAY ////
+          let sundayHours = 0;
+          let sundayTotal = 0;
+          if (weekday == "Sunday") {
+            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+            sundayTotal = shiftEnd - shiftStart;
+            sundayHours =
+              sundayTotal / (1000 * 60 * 60) -
+              calculateLunch(start.value, end.value);
+          }
+
+          let startValue = document.getElementById("startTime").value;
+          let endValue = document.getElementById("endTime").value;
+          let content = {
+            start: startValue,
+            end: endValue,
+            time: calculateTimeDifference(start.value, end.value),
+            lunch: calculateLunch(start.value, end.value),
+            evening: eveningHours,
+            saturday: saturdayHours,
+            sunday: sundayHours,
+            state: 0,
+          };
+          fetch(`/data?currentYear=${currentYear}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ tdId, content, currentIndex }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              loadCell();
+            })
+            .catch((error) => console.error("Error:", error));
         }
+        updateListedShifts();
+
       }
     } else {
       let nothing = null;
@@ -646,87 +667,79 @@ function checkKey(e) {
 }
 
 function updatePaysheet() {
-  let unit1 = document.getElementById("totalTime");
-  let rate1 = document.getElementById("baseRate");
-  let amount1 = document.getElementById("baseAmount");
+  let timeløn_antal = document.getElementById("timeløn_antal");
+  let timeløn_sats = document.getElementById("timeløn_sats");
+  let timeløn_beløb = document.getElementById("timeløn_beløb");
 
-  let unit2 = document.getElementById("totalEvening");
-  let rate2 = document.getElementById("eveningRate");
-  let amount2 = document.getElementById("eveningAmount");
+  let forskudttimer_aften_antal = document.getElementById("forskudttimer_aften_antal");
+  let forskudttimer_aften_sats = document.getElementById("forskudttimer_aften_sats");
+  let forskudttimer_aften_beløb = document.getElementById("forskudttimer_aften_beløb");
 
-  let unit3 = document.getElementById("totalSaturday");
-  let rate3 = document.getElementById("saturdayRate");
-  let amount3 = document.getElementById("saturdayAmount");
+  let forskudttimer_lørdag_antal = document.getElementById("forskudttimer_lørdag_antal");
+  let forskudttimer_lørdag_sats = document.getElementById("forskudttimer_lørdag_sats");
+  let forskudttimer_lørdag_beløb = document.getElementById("forskudttimer_lørdag_beløb");
 
-  let unit4 = document.getElementById("totalSunday");
-  let rate4 = document.getElementById("sundayRate");
-  let amount4 = document.getElementById("sundayAmount");
+  let forskudttimer_søndag_antal = document.getElementById("forskudttimer_søndag_antal");
+  let forskudttimer_søndag_sats = document.getElementById("forskudttimer_søndag_sats");
+  let forskudttimer_søndag_beløb = document.getElementById("forskudttimer_søndag_beløb");
 
-  let payoutPerk = document.getElementById("payoutPerk");
+  let udbetalingFritvalgs_beløb = document.getElementById("udbetalingFritvalgs_beløb");
 
-  let sickUnit = document.getElementById("sickUnit");
-  let sickRate = document.getElementById("sickRate");
-  let sickAmount = document.getElementById("sickAmount");
+  let sygdom_antal = document.getElementById("sygdom_antal");
+  let sygdom_sats = document.getElementById("sygdom_sats");
+  let sygdom_beløb = document.getElementById("sygdom_beløb");
 
-  let ground5 = document.getElementById("ground5");
-  let amount5 = document.getElementById("amount5");
-  let rate5 = document.getElementById("rate5");
+  let udbetalingFeriepenge_beløb = document.getElementById("udbetalingFeriepenge_beløb")
 
-  let amount6 = document.getElementById("amount6");
+  let PFA_grundlag = document.getElementById("PFA_grundlag");
+  let PFA_beløb = document.getElementById("PFA_beløb");
+  let PFA_sats = document.getElementById("PFA_sats");
 
-  let ground7 = document.getElementById("ground7");
-  let rate7 = document.getElementById("rate7");
-  let amount7 = document.getElementById("amount7");
+  let ATP_beløb = document.getElementById("ATP_beløb");
 
-  let ground8 = document.getElementById("ground8");
-  let rate8 = document.getElementById("rate8");
-  let amount8 = document.getElementById("amount8");
+  let arbejdsmarkedsbidrag_grundlag = document.getElementById("arbejdsmarkedsbidrag_grundlag");
+  let arbejdsmarkedsbidrag_sats = document.getElementById("arbejdsmarkedsbidrag_sats");
+  let arbejdsmarkedsbidrag_beløb = document.getElementById("arbejdsmarkedsbidrag_beløb");
 
-  let amount9 = document.getElementById("perk9");
+  let askat_grundlag = document.getElementById("askat_grundlag");
+  let askat_sats = document.getElementById("askat_sats");
+  let askat_beløb = document.getElementById("askat_beløb");
 
-  let amount10 = document.getElementById("amount10");
+  let personalerabat_beløb = document.getElementById("personalerabat_beløb");
 
-  let ground11 = document.getElementById("ground11");
-  let rate11 = document.getElementById("rate11");
-  let amount11 = document.getElementById("amount11");
+  let personaleforening_beløb = document.getElementById("personaleforening_beløb");
 
-  let amount12 = document.getElementById("amount12");
+  let opsparet_fritvalgsaftale_grundlag = document.getElementById("opsparet_fritvalgsaftale_grundlag");
+  let opsparet_fritvalgsaftale_sats = document.getElementById("opsparet_fritvalgsaftale_sats");
+  let opsparet_fritvalgsaftale_beløb = document.getElementById("opsparet_fritvalgsaftale_beløb");
 
-  let ground13 = document.getElementById("ground13");
-  let rate13 = document.getElementById("rate13");
-  let amount13 = document.getElementById("amount13");
+  let opsparet_feriepenge_beløb = document.getElementById("opsparet_feriepenge_beløb");
 
-  let money = document.getElementById("amount14");
+  let personbidrag = document.getElementById("personbidrag");
+  let personbidrag_sats = document.getElementById("personbidrag_sats");
+  let personbidrag_beløb = document.getElementById("personbidrag_beløb");
 
-  unit1.innerHTML = 0;
+  let udbetaling_beløb = document.getElementById("udbetaling_beløb");
+
+  timeløn_antal.innerHTML = 0;
 
   fetch(`/paysheetRates?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-      rate1.value = data[currentIndex][2].baseRate;
-      rate2.value = data[currentIndex][2].eveningRate;
-      rate3.value = data[currentIndex][2].saturdayRate;
-      rate4.value = data[currentIndex][2].sundayRate;
-      sickUnit.value = data[currentIndex][2].monthSickHours;
-      sickRate.value = data[currentIndex][2].baseRate;
-      rate5.value = data[currentIndex][2].pensionRate;
-      payoutPerk.value = data[currentIndex][2].monthPayoutPerk;
-      rate7.value = data[currentIndex][2].lbcRate;
-      rate8.value = data[currentIndex][2].ataxRate;
-      amount9.value = data[currentIndex][2].monthPerks;
-      rate11.value = data[currentIndex][2].additionalPerkRate;
-      rate13.value = data[currentIndex][2].pfaRate;
-
-      let accumulatedPerk = document.getElementById("accumulatedAddPerk");
-      let accumulatedHoliday = document.getElementById("accumulatedHoliday");
-      let sum1 = 0;
-      let sum2 = 0;
-      for (let i = 0; i <= currentIndex; i++) {
-        sum1 += parseInt(data[i][2].monthAdditionalPerk);
-        sum2 += parseInt(data[i][2].monthHoliday);
-      }
-      accumulatedPerk.innerHTML = "$" + sum1;
-      accumulatedHoliday.innerHTML = "$" + sum2;
+      timeløn_sats.value = data[currentIndex][2].timeløn_sats;
+      forskudttimer_aften_sats.value = data[currentIndex][2].forskudttimer_aften_sats;
+      forskudttimer_lørdag_sats.value = data[currentIndex][2].forskudttimer_lørdag_sats;
+      forskudttimer_søndag_sats.value = data[currentIndex][2].forskudttimer_søndag_sats;
+      sygdom_antal.value = data[currentIndex][2].sygdom_antal;
+      sygdom_sats.value = data[currentIndex][2].timeløn_sats;
+      PFA_sats.value = data[currentIndex][2].PFA_sats;
+      udbetalingFritvalgs_beløb.value = data[currentIndex][2].udbetalingFritvalgs_beløb;
+      udbetalingFeriepenge_beløb.value = data[currentIndex][2].udbetalingFeriepenge_beløb;
+      arbejdsmarkedsbidrag_sats.value = data[currentIndex][2].arbejdsmarkedsbidrag_sats;
+      askat_sats.value = data[currentIndex][2].askat_sats;
+      personalerabat_beløb.value = data[currentIndex][2].personalerabat_beløb;
+      opsparet_fritvalgsaftale_sats.value = data[currentIndex][2].opsparet_fritvalgsaftale_sats;
+      personbidrag_sats.value = data[currentIndex][2].personbidrag_sats;
     });
 
   fetch(`/data?currentYear=${currentYear}`)
@@ -762,111 +775,167 @@ function updatePaysheet() {
       donutChart.data.datasets[0].data = donutData;
       donutChart.update();
 
-      unit1.innerHTML = normalTime;
-      amount1.value = (normalTime * rate1.value).toFixed(2);
+      timeløn_antal.innerHTML = normalTime;
+      timeløn_beløb.value = (normalTime * timeløn_sats.value).toFixed(2);
 
-      unit2.innerHTML = eveningTime;
-      amount2.value = (eveningTime * rate2.value).toFixed(2);
+      forskudttimer_aften_antal.innerHTML = eveningTime;
+      forskudttimer_aften_beløb.value = (eveningTime * forskudttimer_aften_sats.value).toFixed(2);
 
-      unit3.innerHTML = saturdayTime;
-      amount3.value = (saturdayTime * rate3.value).toFixed(2);
+      forskudttimer_lørdag_antal.innerHTML = saturdayTime;
+      forskudttimer_lørdag_beløb.value = (saturdayTime * forskudttimer_lørdag_sats.value).toFixed(2);
 
-      unit4.innerHTML = sundayTime;
-      amount4.value = (sundayTime * rate4.value).toFixed(2);
+      forskudttimer_søndag_antal.innerHTML = sundayTime;
+      forskudttimer_søndag_beløb.value = (sundayTime * forskudttimer_søndag_sats.value).toFixed(2);
 
-      sickAmount.value = (sickUnit.value * rate1.value).toFixed(2);
+      sygdom_beløb.value = (sygdom_antal.value * timeløn_sats.value).toFixed(2);
 
-      if (unit1 != 0) {
-        ground5.innerHTML = (
-          +amount1.value +
-          +amount2.value +
-          +amount3.value +
-          +amount4.value +
-          +sickAmount.value +
-          +amount11.value +
-          +amount12.value
+      if (timeløn_antal != 0) {
+        PFA_grundlag.innerHTML = (
+          +timeløn_beløb.value +
+          +forskudttimer_aften_beløb.value +
+          +forskudttimer_lørdag_beløb.value +
+          +forskudttimer_søndag_beløb.value +
+          +sygdom_beløb.value +
+          +opsparet_fritvalgsaftale_beløb.value +
+          +opsparet_feriepenge_beløb.value
         ).toFixed(2);
       }
-      amount5.value = (ground5.innerHTML * rate5.value).toFixed(2);
-      let amount6valueHIGH = -63.1;
-      let amount6value = -31.55;
-      let amount6valueLOW = 0;
+      PFA_beløb.value = (PFA_grundlag.innerHTML * PFA_sats.value).toFixed(2);
+      let ATP_beløb_value_High = -63.1;
+      let ATP_beløb_value = -31.55;
+      let ATP_beløb_value_Low = 0;
       if (normalTime < 39) {
-        amount6.value = amount6valueLOW.toFixed(2);
+        ATP_beløb.value = ATP_beløb_value_Low.toFixed(2);
       } else if (normalTime > 39 && normalTime < 91) {
-        amount6.value = amount6value.toFixed(2);
+        ATP_beløb.value = ATP_beløb_value.toFixed(2);
       } else {
-        amount6.value = amount6valueHIGH.toFixed(2);
+        ATP_beløb.value = ATP_beløb_value_High.toFixed(2);
       }
 
-      ground7.innerHTML = (
-        +amount1.value +
-        +eveningAmount.value +
-        +saturdayAmount.value +
-        +sickAmount.value +
-        +sundayAmount.value +
-        +payoutPerk.value +
-        +amount5.value +
-        +amount6.value
+      arbejdsmarkedsbidrag_grundlag.innerHTML = (
+        +timeløn_beløb.value +
+        +forskudttimer_aften_beløb.value +
+        +forskudttimer_lørdag_beløb.value +
+        +forskudttimer_søndag_beløb.value +
+        +sygdom_beløb.value +
+        +udbetalingFritvalgs_beløb.value +
+        +udbetalingFeriepenge_beløb.value +
+        +PFA_beløb.value +
+        +ATP_beløb.value
       ).toFixed(2);
 
-      amount7.value = (+rate7.value * +ground7.innerHTML).toFixed(2);
+      arbejdsmarkedsbidrag_beløb.value = (+arbejdsmarkedsbidrag_sats.value * +arbejdsmarkedsbidrag_grundlag.innerHTML).toFixed(2);
 
-      ground8.innerHTML = (+ground7.innerHTML + +amount7.value).toFixed(2);
-      amount8.value = (+ground8.innerHTML * +rate8.value).toFixed(2);
+      askat_grundlag.innerHTML = (+arbejdsmarkedsbidrag_grundlag.innerHTML + +arbejdsmarkedsbidrag_beløb.value).toFixed(2);
+      askat_beløb.value = (+askat_grundlag.innerHTML * +askat_sats.value).toFixed(2);
 
-      let amount10value = -20;
+      let personaleforeningbeløb = -20;
       let amount10valueLOW = 0;
       if (normalTime > 0) {
-        amount10.value = amount10value.toFixed(2);
+        personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
       } else {
-        amount10.value = amount10valueLOW.toFixed(2);
+        personaleforening_beløb.value = amount10valueLOW.toFixed(2);
       }
 
-      ground11.innerHTML = (
-        +baseAmount.value +
-        +eveningAmount.value +
-        +saturdayAmount.value +
-        +sundayAmount.value +
-        +sickAmount.value
+      opsparet_fritvalgsaftale_grundlag.innerHTML = (
+        +timeløn_beløb.value +
+        +forskudttimer_aften_beløb.value +
+        +forskudttimer_lørdag_beløb.value +
+        +forskudttimer_søndag_beløb.value +
+        +sygdom_beløb.value
       ).toFixed(2);
-      amount11.value = (+ground11.innerHTML * +rate11.value).toFixed(2);
+      opsparet_fritvalgsaftale_beløb.value = (+opsparet_fritvalgsaftale_grundlag.innerHTML * +opsparet_fritvalgsaftale_sats.value).toFixed(2);
 
-      amount12.value = (ground11.innerHTML * 0.125).toFixed(2);
+      opsparet_feriepenge_beløb.value = (opsparet_fritvalgsaftale_grundlag.innerHTML * 0.125).toFixed(2);
 
-      ground13.innerHTML = (
-        +ground11.innerHTML +
-        +amount12.value +
-        +amount11.value
+      personbidrag.innerHTML = (
+        +opsparet_fritvalgsaftale_grundlag.innerHTML +
+        +opsparet_feriepenge_beløb.value +
+        +opsparet_fritvalgsaftale_beløb.value
       ).toFixed(2);
-      amount13.value = (+ground13.innerHTML * +rate13.value).toFixed(2);
+      personbidrag_beløb.value = (+personbidrag.innerHTML * +personbidrag_sats.value).toFixed(2);
 
-      money.value = (
-        +baseAmount.value +
-        +eveningAmount.value +
-        +saturdayAmount.value +
-        +sundayAmount.value +
-        +payoutPerk.value +
-        +sickAmount.value +
-        +amount5.value +
-        +amount6.value +
-        +amount7.value +
-        +amount8.value +
-        +amount9.value +
-        +amount10.value
+      udbetaling_beløb.value = (
+        +timeløn_beløb.value +
+        +forskudttimer_aften_beløb.value +
+        +forskudttimer_lørdag_beløb.value +
+        +forskudttimer_søndag_beløb.value +
+        +udbetalingFritvalgs_beløb.value +
+        +udbetalingFeriepenge_beløb.value +
+        +sygdom_beløb.value +
+        +PFA_beløb.value +
+        +ATP_beløb.value +
+        +arbejdsmarkedsbidrag_beløb.value +
+        +askat_beløb.value +
+        +personalerabat_beløb.value +
+        +personaleforening_beløb.value
       ).toFixed(2);
 
       let money_preview = document.getElementById("money_preview");
-      money_preview.innerHTML = "$ " + money.value;
+      money_preview.innerHTML = "$ " + udbetaling_beløb.value;
 
       let perk_preview = document.getElementById("perk_preview");
-      perk_preview.innerHTML = "$ " + amount9.value;
+      perk_preview.innerHTML = "$ " + personalerabat_beløb.value;
 
-      value5.innerHTML = "$ " + money.value;
+      value5.innerHTML = "$ " + udbetaling_beløb.value;
     })
     .catch((error) => {
       console.error("Error fetching data from server:", error);
     });
+}
+
+let paysheet_edit_active = false;
+let paysheet_edit_button = document.getElementById("paysheet_editbutton")
+let editable = document.querySelectorAll(".editable");
+
+function updatePaysheetRates() {
+  paysheet_edit_active = !paysheet_edit_active;
+  if (paysheet_edit_active) {
+    paysheet_edit_button.innerHTML = `<i class="fa-solid fa-floppy-disk fa-xl"style="color: rgb(52, 73, 94);"></i>`;
+    editable.forEach((input) => {
+      input.classList.add("edit_active")
+      input.disabled = !input.disabled;
+    })
+  } else {
+    paysheet_edit_button.innerHTML = `<i class="fa-solid fa-pen-to-square fa-xl"style="color: rgb(52, 73, 94);"></i>`
+    editable.forEach((input) => {
+      input.classList.remove("edit_active")
+      input.disabled = !input.disabled;
+    })
+    let content = {
+      timeløn_sats: timeløn_sats.value,
+      forskudttimer_aften_sats: forskudttimer_aften_sats.value,
+      forskudttimer_lørdag_sats: forskudttimer_lørdag_sats.value,
+      forskudttimer_søndag_sats: forskudttimer_søndag_sats.value,
+      PFA_sats: PFA_sats.value,
+      arbejdsmarkedsbidrag_sats: arbejdsmarkedsbidrag_sats.value,
+      askat_sats: askat_sats.value,
+      opsparet_fritvalgsaftale_sats: opsparet_fritvalgsaftale_sats.value,
+      personbidrag_sats: personbidrag_sats.value,
+      personalerabat_beløb: personalerabat_beløb.value,
+      udbetalingFritvalgs_beløb: udbetalingFritvalgs_beløb.value,
+      udbetalingFeriepenge_beløb: udbetalingFeriepenge_beløb.value,
+      sygdom_antal: sygdom_antal.value,
+      udbetaling_beløb: udbetaling_beløb.value,
+      arbejdsmarkedsbidrag_grundlag: arbejdsmarkedsbidrag_grundlag.textContent,
+      ATP_beløb: ATP_beløb.value,
+      PFA_beløb: PFA_beløb.value,
+      arbejdsmarkedsbidrag_beløb: arbejdsmarkedsbidrag_beløb.value,
+      askat_beløb: askat_beløb.value,
+      opsparet_fritvalgsaftale_beløb: opsparet_fritvalgsaftale_beløb.value,
+      opsparet_feriepenge_beløb: opsparet_feriepenge_beløb.value,
+    };
+
+    fetch(`/paysheetRates?currentYear=${currentYear}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content, currentIndex }),
+    });
+
+    updatePaysheet();
+  }
 }
 
 let donutChart = new Chart("progress_circle", {
@@ -1143,13 +1212,97 @@ function holyShift(event) {
         body: JSON.stringify({ tdId, content, currentIndex }),
       })
         .then((response) => response.json())
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => console.error("Error:", error));
     }
     updateListedShifts();
     loadCell();
   }
 }
+
+function updateYearStats() {
+  let yearHours = document.getElementById("yearHours");
+  let yearEvening = document.getElementById("yearEvening");
+  let yearSaturday = document.getElementById("yearSaturday");
+  let yearSunday = document.getElementById("yearSunday");
+  let yearBreak = document.getElementById("yearBreak");
+  let yearMoney = document.getElementById("yearMoney");
+  let yearAIncome = document.getElementById("yearAIncome");
+  let yearPerks = document.getElementById("yearPerks");
+  let yearSick = document.getElementById("yearSick");
+  let yearTax = document.getElementById("yearTax");
+  let yearATP = document.getElementById("yearATP");
+  let yearLBC = document.getElementById("yearLBC");
+  let yearAdditionalPerk = document.getElementById("yearAdditionalPerk");
+  let yearHoliday = document.getElementById("yearHoliday");
+  let sumMoney = 0;
+  let sumAIncome = 0;
+  let sumPerks = 0;
+  let sumHours = 0;
+  let sumEvening = 0;
+  let sumSaturday = 0;
+  let sumSunday = 0;
+  let sumBreak = 0;
+  let sumSick = 0;
+  let sumTax = 0;
+  let sumATP = 0;
+  let sumPension = 0;
+  let sumLBC = 0;
+  let sumAdditionalPerk = 0;
+  let sumHoliday = 0;
+
+  fetch(`/paysheetRates?currentYear=${currentYear}`)
+    .then((response) => response.json())
+    .then((data) => {
+      for (let i = 0; i < 12; i++) {
+        sumMoney += parseInt(data[i][2].udbetaling_beløb);
+        sumAIncome += parseInt(data[i][2].arbejdsmarkedsbidrag_grundlag);
+        sumPerks += parseInt(data[i][2].personalerabat_beløb);
+        sumTax += parseInt(data[i][2].askat_beløb);
+        sumLBC += parseInt(data[i][2].arbejdsmarkedsbidrag_beløb);
+        sumATP += parseInt(data[i][2].ATP_beløb);
+        sumPension += parseInt(data[i][2].PFA_beløb);
+        sumAdditionalPerk +=
+          parseInt(data[i][2].udbetalingFritvalgs_beløb) * 0.92 * 0.62;
+
+        sumHoliday += parseInt(data[i][2].udbetalingFeriepenge_beløb) * 0.92 * 0.62;
+        sumSick += parseInt(data[i][2].sygdom_antal);
+      }
+      yearMoney.innerHTML = "$ " + sumMoney;
+      yearAIncome.innerHTML = "$ " + sumAIncome;
+      yearPerks.innerHTML = "$ " + sumPerks;
+      yearTax.innerHTML = "$ " + sumTax;
+      yearLBC.innerHTML = "$ " + sumLBC;
+      yearAdditionalPerk.innerHTML = "$ " + sumAdditionalPerk.toFixed(0);
+      yearHoliday.innerHTML = "$ " + sumHoliday.toFixed(0);
+      yearATP.innerHTML = "$ " + sumATP.toFixed(0);
+      yearPension.innerHTML = "$ " + sumPension.toFixed(0);
+      yearSick.innerHTML = sumSick + "h";
+    });
+
+  fetch(`/data?currentYear=${currentYear}`)
+    .then((response) => response.json())
+    .then((data) => {
+      for (let i = 0; i < 12; i++) {
+        for (let j = 0; j < 42; j++) {
+          if (data[i][0][j] !== null) {
+            sumHours += data[i][0][j].time;
+            sumEvening += data[i][0][j].evening;
+            sumSaturday += data[i][0][j].saturday;
+            sumSunday += data[i][0][j].sunday;
+            sumBreak += data[i][0][j].lunch;
+          }
+        }
+      }
+      yearHours.innerHTML = sumHours + " h";
+      yearEvening.innerHTML = sumEvening + " h";
+      yearSaturday.innerHTML = sumSaturday + " h";
+      yearSunday.innerHTML = sumSunday + " h";
+      yearBreak.innerHTML = sumBreak + " h";
+    });
+}
+
+updateYearStats();
 
 let graphNames = [
   "Normal hours",
@@ -1225,15 +1378,118 @@ let yearChart = new Chart("progress_year", {
 
 let allGraphs = [];
 
+changeGraph();
+
+function changeGraph(direction) {
+  allGraphs = [];
+
+  let graph_center = document.getElementById("graph_center");
+  let graph_back = document.getElementById("graph_back");
+  let graph_next = document.getElementById("graph_next");
+  if (direction == "prev") {
+    if (currentGraph > 0) {
+      currentGraph--;
+    }
+  }
+  if (direction == "next") {
+    if (currentGraph < 8) {
+      currentGraph++;
+    }
+  }
+
+  if (currentGraph == 0) {
+    graph_back.style.opacity = 0;
+    graph_back.style.pointerEvents = "none";
+  } else {
+    graph_back.style.opacity = 1;
+    graph_back.style.pointerEvents = "auto";
+  }
+  if (currentGraph == 8) {
+    graph_next.style.opacity = 0;
+    graph_next.style.pointerEvents = "none";
+  } else {
+    graph_next.style.opacity = 1;
+    graph_next.style.pointerEvents = "auto";
+  }
+
+  let yearHours = [];
+  let yearEvening = [];
+  let yearSaturday = [];
+  let yearSunday = [];
+  let yearBreaks = [];
+  let yearMoney = [];
+  let yearAverage = [];
+  let yearPerks = [];
+  let yearSickHours = [];
+
+  Promise.all([
+    fetch(`/data?currentYear=${currentYear}`).then((response) =>
+      response.json()
+    ),
+    fetch(`/paysheetRates?currentYear=${currentYear}`).then((response) => response.json()),
+  ]).then(([data, paysheetRates]) => {
+    // Process data from the first fetch call
+    for (let k = 0; k < 12; k++) {
+      let sum_yearHours = 0;
+      let sum_yearEvening = 0;
+      let sum_yearSaturday = 0;
+      let sum_yearSunday = 0;
+      let sum_yearBreaks = 0;
+      for (let j = 0; j < 42; j++) {
+        if (data[k][0][j] !== null) {
+          sum_yearHours += data[k][0][j].time;
+          sum_yearEvening += data[k][0][j].evening;
+          sum_yearSaturday += data[k][0][j].saturday;
+          sum_yearSunday += data[k][0][j].sunday;
+          sum_yearBreaks += data[k][0][j].lunch;
+        }
+      }
+      yearHours.push(sum_yearHours);
+      yearEvening.push(sum_yearEvening);
+      yearSaturday.push(sum_yearSaturday);
+      yearSunday.push(sum_yearSunday);
+      yearBreaks.push(sum_yearBreaks);
+      yearAverage.push((paysheetRates[k][2].udbetaling_beløb / sum_yearHours).toFixed(0));
+    }
+
+    // Process data from the second fetch call (paysheetRates)
+    for (let i = 0; i < 12; i++) {
+      yearMoney.push(parseInt(paysheetRates[i][2].udbetaling_beløb));
+      yearPerks.push(parseInt(paysheetRates[i][2].personalerabat_beløb));
+      yearSickHours.push(paysheetRates[i][2].sygdom_antal);
+    }
+
+    allGraphs.push(yearHours);
+    allGraphs.push(yearEvening);
+    allGraphs.push(yearSaturday);
+    allGraphs.push(yearSunday);
+    allGraphs.push(yearBreaks);
+    allGraphs.push(yearMoney);
+    allGraphs.push(yearAverage);
+    allGraphs.push(yearPerks);
+    allGraphs.push(yearSickHours);
+
+    // Update the chart here, inside the Promise.all().then() block
+    let yearData = allGraphs[currentGraph];
+    yearChart.data.datasets[0].data = yearData;
+    yearChart.update();
+
+    // Update button text
+    graph_back.innerHTML = graphNames[currentGraph - 1];
+    graph_center.innerHTML = graphNames[currentGraph];
+    graph_next.innerHTML = graphNames[currentGraph + 1];
+  });
+}
+
+graph_back.addEventListener("click", function () {
+  changeGraph("prev");
+});
+
+graph_next.addEventListener("click", function () {
+  changeGraph("next");
+});
+
 donutChart.update();
 yearChart.update();
 monthChart.update();
 
-let yearMonthToggle = document.getElementById("yearMonthToggle");
-yearMonthToggle.addEventListener("change", () => {
-  if (yearMonthToggle.checked) {
-    console.log("Total");
-  } else {
-    console.log("Year");
-  }
-});

@@ -85,14 +85,14 @@
                         </div>
                         <div class="white_section_left" id="shiftListContainer">
                             <div id="shiftListHeaders">
-                                <span class="shiftListHeader">Day</span>
-                                <span class="shiftListHeader">Start</span>
+                                <span class="shiftListHeader">Weekday</span>
+                                <span class="shiftListHeader">Beginning</span>
                                 <span class="shiftListHeader">End</span>
                                 <span class="shiftListHeader">Hours</span>
-                                <span class="shiftListHeader">Lunch</span>
-                                <span class="shiftListHeader">Evening</span>
-                                <span class="shiftListHeader">Saturday</span>
-                                <span class="shiftListHeader">Sunday</span>
+                                <span class="shiftListHeader">Break</span>
+                                <span class="shiftListHeader">Evening Hours</span>
+                                <span class="shiftListHeader">Saturday Hours</span>
+                                <span class="shiftListHeader">Sunday Hours</span>
                             </div>
                             <ul id="shiftList"></ul>
                         </div>
@@ -209,7 +209,8 @@
 
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="weekNoInput" class="weekNumbers" value="0" />
+                                            <input id="week1" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td0"></td>
                                         <td id="td1"></td>
@@ -221,7 +222,8 @@
                                     </tr>
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="week2" class="weekNumbers" value="0" />
+                                            <input id="week2" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td7"></td>
                                         <td id="td8"></td>
@@ -233,7 +235,8 @@
                                     </tr>
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="week3" class="weekNumbers" value="0" />
+                                            <input id="week3" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td14"></td>
                                         <td id="td15"></td>
@@ -245,7 +248,8 @@
                                     </tr>
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="week4" class="weekNumbers" value="0" />
+                                            <input id="week4" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td21"></td>
                                         <td id="td22"></td>
@@ -257,7 +261,8 @@
                                     </tr>
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="week5" class="weekNumbers" value="0" />
+                                            <input id="week5" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td28"></td>
                                         <td id="td29"></td>
@@ -269,7 +274,8 @@
                                     </tr>
                                     <tr>
                                         <th class="weekNo">
-                                            <input id="week6" class="weekNumbers" value="0" />
+                                            <input id="week6" class="weekNumbers" value="0"
+                                                onchange="updateWeekNumbers()" />
                                         </th>
                                         <td id="td35"></td>
                                         <td id="td36"></td>
@@ -516,174 +522,186 @@
                                 <table>
                                     <tr>
                                         <th class="specification">Lønart</th>
-                                        <th class="ground">Grundlag</th>
-                                        <th class="unit">Antal</th>
-                                        <th class="rate">Sats</th>
-                                        <th class="amount">Beløb</th>
+                                        <th class="grundlag">Grundlag</th>
+                                        <th class="antal">Antal</th>
+                                        <th class="sats">Sats</th>
+                                        <th class="beløb">Beløb</th>
                                     </tr>
                                     <tr>
                                         <th class="specification" id="base">Timeløn</th>
-                                        <td class="ground"></td>
-                                        <td class="unit" id="totalTime"></td>
-                                        <td class="rate">
-                                            <input id="baseRate" value="0.00">
+                                        <td class="grundlag"></td>
+                                        <td class="antal" id="timeløn_antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="timeløn_sats" value="0.00">
                                         </td>
-                                        <td class="amount"><input id="baseAmount"></td>
+                                        <td class="beløb"><input disabled id="timeløn_beløb" value="0.00"></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="evening">Forskudttimer aften</th>
-                                        <td class="ground"></td>
-                                        <td class="unit" id="totalEvening"></td>
-                                        <td class="rate">
-                                            <input id="eveningRate" value="0.00">
+                                        <th class="specification" id="forskudttimer_aften">Forskudttimer aften</th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal" id="forskudttimer_aften_antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="forskudttimer_aften_sats" value="0.00">
                                         </td>
-                                        <td class="amount"><input id="eveningAmount" /></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="specification" id="saturday">Forskudttimer lørdag</th>
-                                        <td class="ground"></td>
-                                        <td class="unit" id="totalSaturday"></td>
-                                        <td class="rate">
-                                            <input id="saturdayRate" value="0.00">
-                                        </td>
-                                        <td class="amount"><input id="saturdayAmount" /></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="specification" id="sunday">Forskudttimer søndag</th>
-                                        <td class="ground"></td>
-                                        <td class="unit" id="totalSunday"></td>
-                                        <td class="rate">
-                                            <input id="sundayRate" value="0.00">
-                                        </td>
-                                        <td class="amount"><input id="sundayAmount" /></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="specification" id="sick">Sygdom med betaling</th>
-                                        <td class="ground"></td>
-                                        <td class="unit">
-                                            <input id="sickUnit" value="0.00">
-                                        </td>
-                                        <td class="rate"><input id="sickRate" value="0.00"></td>
-                                        <td class=" amount">
-                                            <input id="sickAmount">
+                                        <td class="beløb"><input disabled id="forskudttimer_aften_beløb" value="0.00">
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="payoutHoliday">Udbetaling af feriepenge</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount">
-                                            <input id="payoutHolidayAmount" value="0.00">
+                                        <th class="specification" id="forskudttimer_lørdag">Forskudttimer lørdag</th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal" id="forskudttimer_lørdag_antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="forskudttimer_lørdag_sats"
+                                                value="0.00">
+                                        </td>
+                                        <td class="beløb"><input disabled id="forskudttimer_lørdag_beløb" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="forskudttimer_søndag">Forskudttimer søndag</th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal" id="forskudttimer_søndag_antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="forskudttimer_søndag_sats"
+                                                value="0.00">
+                                        </td>
+                                        <td class="beløb"><input disabled id="forskudttimer_søndag_beløb" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification" id="sygdom">Sygdom med betaling</th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal">
+                                            <input disabled class="editable" id="sygdom_antal" value="0.00">
+                                        </td>
+                                        <td class="sats"><input disabled id="sygdom_sats" value="0.00"></td>
+                                        <td class="beløb">
+                                            <input disabled class="editable" id="sygdom_beløb">
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th class=" specification">Personbidrag</th>
-                                        <td class="ground" id="ground5"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate">
-                                            <input id="rate5" value="0.00">
+                                        <th class="specification" id="udbetalingFeriepenge">Udbetaling af feriepenge
+                                        </th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb">
+                                            <input disabled class="editable" id="udbetalingFeriepenge_beløb"
+                                                value="0.00">
                                         </td>
-                                        <td class="amount"><input id="amount5" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification" id="sunday">Udbetaling af fritvalgskonto</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount">
-                                            <input id="payoutPerk" value="0.00">
+                                        <th class="specification" id="udbetalingFritvalgs">Udbetaling af fritvalgskonto
+                                        </th>
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb">
+                                            <input disabled class="editable" id="udbetalingFritvalgs_beløb"
+                                                value="0.00">
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="specification">Overført til PFA</th>
+                                        <td class="grundlag" id="PFA_grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="PFA_sats" value="0.00">
+                                        </td>
+                                        <td class="beløb"><input disabled id="PFA_beløb"></td>
                                     </tr>
                                     <tr>
                                         <th class="specification">ATP bidrag</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount"><input id="amount6" /></td>
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb"><input disabled id="ATP_beløb" /></td>
                                     </tr>
                                     <tr>
                                         <th class="specification">Arbejdsmarkedsbidrag</th>
-                                        <td class="ground" id="ground7"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate">
-                                            <input id="rate7" value="0.00">
+                                        <td class="grundlag" id="arbejdsmarkedsbidrag_grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="arbejdsmarkedsbidrag_sats"
+                                                value="0.00">
                                         </td>
-                                        <td class="amount"><input id="amount7" /></td>
+                                        <td class="beløb"><input disabled id="arbejdsmarkedsbidrag_beløb"></td>
                                     </tr>
                                     <tr>
                                         <th class="specification">A-skat</th>
-                                        <td class="ground" id="ground8"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate">
-                                            <input id="rate8" value="0.00">
+                                        <td class="grundlag" id="askat_grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats">
+                                            <input disabled class="editable" id="askat_sats" value="0.00">
                                         </td>
-                                        <td class="amount"><input id="amount8" /></td>
+                                        <td class="beløb"><input disabled id="askat_beløb" /></td>
                                     </tr>
                                     <tr>
                                         <th class="specification">Personalerabat</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount">
-                                            <input id="perk9" value="0.00">
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb">
+                                            <input disabled class="editable" id="personalerabat_beløb" value="0.00">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th class="specification">Personaleforening</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount"><input id="amount10" /></td>
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb"><input disabled id="personaleforening_beløb" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification upperBorder">Opsaret fritvalgsaftale</th>
-                                        <td class="ground upperBorder" id="ground11"></td>
-                                        <td class="unit upperBorder"></td>
-                                        <td class="rate upperBorder">
-                                            <input id="rate11" value="0.00">
+                                        <th class="specification upperBorder">Opsparet fritvalgsaftale</th>
+                                        <td class="grundlag upperBorder" id="opsparet_fritvalgsaftale_grundlag"></td>
+                                        <td class="antal upperBorder"></td>
+                                        <td class="sats upperBorder">
+                                            <input disabled class="editable" id="opsparet_fritvalgsaftale_sats"
+                                                value="0.00">
                                         </td>
-                                        <td class="amount upperBorder"><input id="amount11" /></td>
+                                        <td class="beløb upperBorder"><input disabled
+                                                id="opsparet_fritvalgsaftale_beløb" /></td>
                                     </tr>
                                     <tr>
                                         <th class="specification">Opsparet feriepenge</th>
-                                        <td class="ground"></td>
-                                        <td class="unit"></td>
-                                        <td class="rate"></td>
-                                        <td class="amount"><input id="amount12"></td>
+                                        <td class="grundlag"></td>
+                                        <td class="antal"></td>
+                                        <td class="sats"></td>
+                                        <td class="beløb"><input disabled id="opsparet_feriepenge_beløb"></td>
                                     </tr>
                                     <tr>
                                         <th class="specification lowerBorder">Personbidrag firma</th>
-                                        <td class="ground lowerBorder" id="ground13"></td>
-                                        <td class="unit lowerBorder"></td>
-                                        <td class="rate lowerBorder">
-                                            <input id="rate13" value="0.00">
+                                        <td class="grundlag lowerBorder" id="personbidrag"></td>
+                                        <td class="antal lowerBorder"></td>
+                                        <td class="sats lowerBorder">
+                                            <input disabled class="editable" id="personbidrag_sats" value="0.00">
                                         </td>
-                                        <td class="amount lowerBorder"><input id="amount13" /></td>
+                                        <td class="beløb lowerBorder"><input disabled id="personbidrag_beløb" /></td>
                                     </tr>
                                     <tr>
-                                        <th class="specification money">Total</th>
-                                        <td class="ground money"></td>
-                                        <td class="unit money"></td>
-                                        <td class="rate money"></td>
-                                        <td class="amount money"><input id="amount14" /></td>
+                                        <th class="specification udbetaling">Total til udbetaling</th>
+                                        <td class="grundlag udbetaling"></td>
+                                        <td class="antal udbetaling"></td>
+                                        <td class="sats udbetaling"></td>
+                                        <td class="beløb udbetaling"><input disabled id="udbetaling_beløb" /></td>
                                     </tr>
                                 </table>
-
+                                <div id="paysheet_editbutton" onclick="updatePaysheetRates(); updatePaysheet();"><i
+                                        class="fa-solid fa-pen-to-square fa-xl" style="color: rgb(52, 73, 94);"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="content_section right page_section">
                         <div id="paysheetRight">
                             <div id="paysheetRightContent">
-                                <div class="accumulated">
+                                <!--                              <div class="accumulated">
                                     <span class="accumText">Accumulated perks</span>
                                     <span id="accumulatedAddPerk"></span>
                                 </div>
                                 <div class="accumulated">
                                     <span class="accumText">Accumulated holiday</span>
                                     <span id="accumulatedHoliday"></span>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 
@@ -704,14 +722,6 @@
 
                         </div>
                         <div class="white_section_left" id="yearMonthContainer">
-                            <div id="toggleContainer">
-                                <span>YEAR</span>
-                                <label>
-                                    <input type="checkbox" id="yearMonthToggle" class="toggle-checkbox">
-                                    <div class="toggle-switch"></div>
-                                </label>
-                                <span>TOTAL</span>
-                            </div>
                         </div>
                     </div>
                     <div class="content_section right page_section" id="graphs_numbers">

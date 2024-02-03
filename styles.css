@@ -488,6 +488,7 @@ body {
 
 #paysheet {
   height: 100%;
+
 }
 
 #paysheetContainer {
@@ -505,10 +506,22 @@ body {
 
 #paysheet input {
   border: none;
-  width: 100%;
+  width: 50%;
   font-size: 16px;
   text-align: right;
+  border-radius: 3px;
+  cursor: default;
+}
+
+#paysheet input:disabled {
   background-color: transparent;
+  color: var(--darkbackground)
+}
+
+.edit_active {
+  background-color: var(--gray);
+  color: white;
+  cursor: auto;
 }
 
 .specification {
@@ -517,13 +530,14 @@ body {
   color: var(--darkbackground);
 }
 
-.ground,
-.rate,
-.unit,
-.amount {
+.grundlag,
+.sats,
+.antal,
+.beløb {
   width: 20%;
   text-align: right;
   color: var(--darkbackground);
+  cursor: default;
 }
 
 .upperBorder {
@@ -1075,29 +1089,24 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
-#reloadButton {
-  transform: scale(1);
-  color: white;
-  width: 100%;
-  height: 20%;
-  border-radius: 10px;
-  border: none;
+#paysheet_editbutton {
   cursor: pointer;
-  background-color: var(--blue);
-  transform: scale(1);
-  transition: all ease 0.3s;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 5px;
+  border-radius: 15px;
+  transition: all ease-in-out 0.15s;
 }
 
-#reloadButton .fa-arrows-rotate {
-  transform: scale(2);
-}
-
-#reloadButton:hover {
-  background-color: var(--darkblue);
-  transition: all ease 0.3s;
-  transform: scale(1.05);
+#paysheet_editbutton:hover {
+  background-color: var(--lightgray);
 }
 
 #page_nav3 .right {
@@ -1135,59 +1144,4 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-}
-
-#toggleContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin: 0px auto 20px auto;
-
-}
-
-#toggleContainer span {
-  font-size: 45px;
-}
-
-.toggle-checkbox {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  display: none;
-}
-
-.toggle-switch {
-  background-color: var(--lightgray);
-  width: 200px;
-  height: 50px;
-  border-radius: 25px;
-  position: relative;
-  transition: 0.3s;
-  cursor: pointer;
-}
-
-.toggle-switch::before {
-  content: "";
-  background-color: var(--darkblue);
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  border-radius: 50%;
-  top: 5px;
-  left: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: 0.3s;
-}
-
-.toggle-checkbox:checked+.toggle-switch {
-  background-color: var(--lightgray);
-}
-
-.toggle-checkbox:checked+.toggle-switch::before {
-  content: "";
-  left: 155px;
 }

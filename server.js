@@ -77,9 +77,13 @@ app.get("/data", (req, res) => {
       res.status(500).send("Error reading JSON file.");
       return;
     }
+    try {
 
-    let jsonData = JSON.parse(data);
-    res.json(jsonData);
+      let jsonData = JSON.parse(data);
+      res.json(jsonData);
+    } catch (error) {
+      console.error("error", error.message);
+    }
   });
 });
 
@@ -202,6 +206,38 @@ app.get("/paysheetRates", (req, res) => {
     res.json(paysheetRatesData);
   });
 });
+
+app.post("/paysheetRates", (req, res) => {
+  const { content, currentIndex } = req.body;
+  const currentYear = req.query.currentYear;
+  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error reading JSON file.");
+      return;
+    }
+
+    let jsonData = JSON.parse(data);
+    jsonData[currentIndex][2] = content;
+
+    fs.writeFile(
+      shiftTimesFilename,
+      JSON.stringify(jsonData),
+      "utf8",
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error writing to JSON file.");
+          return;
+        }
+
+        res.json({ message: "Shift added successfully." });
+      }
+    );
+  });
+});
+
 
 // Start the server
 
