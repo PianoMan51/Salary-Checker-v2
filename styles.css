@@ -561,184 +561,25 @@ body {
   width: 50%;
 }
 
-#page_nav4 .white_section_left,
-#page_nav4 .white_section_right {
+#page_nav4 .white_section_left {
   height: 50%;
-}
-
-#graphsButtonsContainer {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-#graph_year {
-  width: 85%;
-  height: 75%;
-  margin: 10px auto;
-}
-
-#graphs {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#yearStatsContainer {
-  display: grid;
-  border-radius: 15px;
-  height: 50%;
-  width: 100%;
-  grid-template-columns: auto auto auto auto auto auto auto;
-  grid-template-rows: 10% 10% 10% 10% 10% 10% 10% 10%;
-  gap: 10px;
-}
-
-#yearMoney {
-  grid-column: 4 / 6;
-  grid-row: 1 / 3;
-  background-color: var(--moneygreen);
-  font-size: 40px;
-}
-
-#yearAIncome {
-  grid-column: 1 / 4;
-  grid-row: 1 / 5;
-  background-color: var(--darkmoneygreen);
-  font-size: 60px;
-}
-
-#yearHoliday {
-  grid-column: 6 / 8;
-  grid-row: 1 / 3;
-  background-color: var(--moneygreen);
-  font-size: 35px;
-}
-
-#yearHours {
-  grid-column: 1 / 3;
-  grid-row: 5 / 7;
-  background-color: var(--blue);
-  font-size: 30px;
-}
-
-#yearEvening {
-  grid-column: 3 / 4;
-  grid-row: 5 / 7;
-  background-color: var(--darkbackground);
-}
-
-#yearSaturday {
-  grid-column: 2 / 3;
-  grid-row: 7 / 9;
-  background-color: var(--darkyellow);
-}
-
-#yearSunday {
-  grid-column: 3 / 4;
-  grid-row: 7 / 9;
-  background-color: var(--darkred);
-}
-
-#yearTax {
-  grid-column: 6/8;
-  grid-row: 5/9;
-  background-color: var(--darkred);
-  font-size: 50px;
-}
-
-
-#yearATP {
-  grid-column: 5/6;
-  grid-row: 5/7;
-  background-color: var(--red);
-}
-
-#yearSick {
-  grid-column: 1/2;
-  grid-row: 8/9;
-  background-color: var(--red);
-}
-
-#yearBreak {
-  grid-column: 1/2;
-  grid-row: 7/8;
-  background-color: var(--red);
-  background-color: var(--gray);
-}
-
-#yearPension {
-  grid-column: 4/5;
-  grid-row: 5/7;
-  background-color: var(--red);
-}
-
-#yearLBC {
-  grid-column: 4/6;
-  grid-row: 7/9;
-  background-color: var(--red);
-  font-size: 35px;
-}
-
-#yearPerks {
-  grid-column: 4 / 6;
-  grid-row: 3 / 5;
-  background-color: var(--moneygreen);
-  font-size: 30px;
-}
-
-#yearAdditionalPerk {
-  grid-column: 6 / 8;
-  grid-row: 3 / 5;
-  background-color: var(--moneygreen);
-  font-size: 35px;
-}
-
-.yearStat {
-  border-radius: 10px;
-  color: white;
-  font-size: 30px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  transform: scale(1);
-  transition: 0.3s all ease;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-.yearStat:hover {
-  transform: scale(1.05);
-  transition: 0.3s all ease;
-}
-
-#graph_buttons {
-  margin: 0px auto;
-  display: flex;
-  justify-content: space-between;
-  height: 20px;
-  width: 85%;
-  gap: 20px;
   align-items: center;
 }
 
-#graph_buttons button {
-  border: none;
-  border-radius: 10px;
-  color: white;
-  cursor: pointer;
-  width: 200px;
-  padding: 10px 0px;
+#page_nav4 .white_section_right {
+  height: 100%;
 }
 
-#graph_buttons .primary {
-  background-color: var(--darkblue);
-  font-size: 15px;
+#graph_year,
+#graph_total {
+  width: 700px;
+  height: 300px;
 }
 
-#graph_buttons .side {
-  background-color: var(--blue);
-}
+
+
 
 /* ///////////////////////// */
 

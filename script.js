@@ -11,7 +11,7 @@ let holyButton = document.getElementById("calendar_holy");
 let editShiftSection = document.getElementById("editShift");
 let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
-let currentYear = localStorage.getItem("currentYear") || "2024";
+let currentYear = localStorage.getItem("currentYear") || 2023;
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
 let bottomButton = document.getElementById("bottomButton");
@@ -22,7 +22,6 @@ let paysheet = document.getElementById("paysheet");
 let preview = document.getElementById("preview");
 let shiftList = document.getElementById("shiftListContainer");
 let shiftDetails = document.getElementById("shiftDetails");
-let currentGraph = 5;
 let deleteActive = false;
 let editActive = false;
 let sickActive = false;
@@ -156,7 +155,6 @@ yearButtons.forEach((year) => {
     currentYear = year.innerHTML;
     localStorage.setItem("currentYear", currentYear);
 
-
     yearButtons.forEach((otherYear) => {
       otherYear.style.backgroundColor = "var(--gray)";
       otherYear.classList.remove("active");
@@ -165,18 +163,12 @@ yearButtons.forEach((year) => {
     year.style.backgroundColor = "var(--darkergray)";
     year.classList.add("active");
 
-    fetch(`/data?currentYear=${currentYear}`)
-      .then((response) => response.json())
-      .then((data) => {
-        loadCell();
-        updateMonthChart();
-        updateListedShifts();
-        updatePaysheet();
-        updateYearStats();
-      })
-      .catch((error) => {
-        console.error("Error fetching data from server:", error);
-      });
+    loadCell();
+    updatePaysheet();
+    updateMonthChart();
+    updateYearChart();
+    updateTotalChart();
+    updateListedShifts();
   });
 });
 
@@ -333,9 +325,10 @@ function loadCell() {
         td.classList.add("off");
         td.classList.remove("on");
       });
-      let monthData1 = [];
-      let shiftCounter = 0;
 
+      //month-basis
+      let monthChartData = [];
+      let shiftCounter = 0;
       for (let i = 0; i < monthData.length; i++) {
         let tdId = "td" + i;
         if (monthData[i] && monthData[i].start) {
@@ -362,13 +355,37 @@ function loadCell() {
           }
         }
         if (monthData[i]) {
-          monthData1.push(monthData[i].time);
+          monthChartData.push(monthData[i].time);
         } else {
-          monthData1.push(0.2);
+          monthChartData.push(0.2);
         }
       }
+
+      //year-basis
+      //all years
+      let monthTotal = 0;
+      //let yearTotal = 0;
+      let yearChartData = [];
+      let yearChartSalary = [];
+      //let totalChartData = [];
+      for (let i = 0; i < data.length; i++) {
+        monthTotal = 0;
+        yearTotal = 0;
+        for (let j = 0; j < monthData.length; j++) {
+          if (data[i][0][j]) {
+            monthTotal += data[i][0][j].time;
+          }
+          //yearTotal += monthTotal;
+        }
+        yearChartSalary.push(data[i][2].udbetaling_beløb);
+        yearChartData.push(monthTotal);
+        //totalChartData.push(yearTotal);
+      }
+
       shiftCount.innerHTML = shiftCounter;
-      updateMonthChart(monthData1);
+      updateMonthChart(monthChartData);
+      updateYearChart(yearChartData, yearChartSalary);
+      // updateTotalChart(totalChartData);
 
       for (let i = 0; i < monthData.length; i++) {
         let tdId = "tdp" + i;
@@ -384,8 +401,6 @@ function loadCell() {
   fetch(`/weekNo?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
-
-
       let weekNumbers = data[currentIndex][1];
 
       week1.value = weekNumbers.week1;
@@ -443,7 +458,12 @@ let addShift = (event) => {
   let tdId = event.target.id;
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
-    if (deleteActive === false && sickActive === false && holyActive === false && editActive === false) {
+    if (
+      deleteActive === false &&
+      sickActive === false &&
+      holyActive === false &&
+      editActive === false
+    ) {
       if (!isNaN(currentIndex)) {
         if (document.getElementById(tdId).classList == "off") {
           let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
@@ -539,7 +559,6 @@ let addShift = (event) => {
             .catch((error) => console.error("Error:", error));
         }
         updateListedShifts();
-
       }
     } else {
       let nothing = null;
@@ -644,52 +663,58 @@ function changeMonth(direction) {
 
 prevBtn.addEventListener("click", function () {
   changeMonth("prev");
-  yearChart.update();
 });
 
 nextBtn.addEventListener("click", function () {
   changeMonth("next");
-  yearChart.update();
 });
-
-document.onkeydown = checkKey;
-function checkKey(e) {
-  if (!editActive) {
-    e = e || window.event;
-    if (e.keyCode == "37") {
-      changeMonth("prev");
-      yearChart.update();
-    } else if (e.keyCode == "39") {
-      changeMonth("next");
-      yearChart.update();
-    }
-  }
-}
 
 function updatePaysheet() {
   let timeløn_antal = document.getElementById("timeløn_antal");
   let timeløn_sats = document.getElementById("timeløn_sats");
   let timeløn_beløb = document.getElementById("timeløn_beløb");
 
-  let forskudttimer_aften_antal = document.getElementById("forskudttimer_aften_antal");
-  let forskudttimer_aften_sats = document.getElementById("forskudttimer_aften_sats");
-  let forskudttimer_aften_beløb = document.getElementById("forskudttimer_aften_beløb");
+  let forskudttimer_aften_antal = document.getElementById(
+    "forskudttimer_aften_antal"
+  );
+  let forskudttimer_aften_sats = document.getElementById(
+    "forskudttimer_aften_sats"
+  );
+  let forskudttimer_aften_beløb = document.getElementById(
+    "forskudttimer_aften_beløb"
+  );
 
-  let forskudttimer_lørdag_antal = document.getElementById("forskudttimer_lørdag_antal");
-  let forskudttimer_lørdag_sats = document.getElementById("forskudttimer_lørdag_sats");
-  let forskudttimer_lørdag_beløb = document.getElementById("forskudttimer_lørdag_beløb");
+  let forskudttimer_lørdag_antal = document.getElementById(
+    "forskudttimer_lørdag_antal"
+  );
+  let forskudttimer_lørdag_sats = document.getElementById(
+    "forskudttimer_lørdag_sats"
+  );
+  let forskudttimer_lørdag_beløb = document.getElementById(
+    "forskudttimer_lørdag_beløb"
+  );
 
-  let forskudttimer_søndag_antal = document.getElementById("forskudttimer_søndag_antal");
-  let forskudttimer_søndag_sats = document.getElementById("forskudttimer_søndag_sats");
-  let forskudttimer_søndag_beløb = document.getElementById("forskudttimer_søndag_beløb");
+  let forskudttimer_søndag_antal = document.getElementById(
+    "forskudttimer_søndag_antal"
+  );
+  let forskudttimer_søndag_sats = document.getElementById(
+    "forskudttimer_søndag_sats"
+  );
+  let forskudttimer_søndag_beløb = document.getElementById(
+    "forskudttimer_søndag_beløb"
+  );
 
-  let udbetalingFritvalgs_beløb = document.getElementById("udbetalingFritvalgs_beløb");
+  let udbetalingFritvalgs_beløb = document.getElementById(
+    "udbetalingFritvalgs_beløb"
+  );
 
   let sygdom_antal = document.getElementById("sygdom_antal");
   let sygdom_sats = document.getElementById("sygdom_sats");
   let sygdom_beløb = document.getElementById("sygdom_beløb");
 
-  let udbetalingFeriepenge_beløb = document.getElementById("udbetalingFeriepenge_beløb")
+  let udbetalingFeriepenge_beløb = document.getElementById(
+    "udbetalingFeriepenge_beløb"
+  );
 
   let PFA_grundlag = document.getElementById("PFA_grundlag");
   let PFA_beløb = document.getElementById("PFA_beløb");
@@ -697,9 +722,15 @@ function updatePaysheet() {
 
   let ATP_beløb = document.getElementById("ATP_beløb");
 
-  let arbejdsmarkedsbidrag_grundlag = document.getElementById("arbejdsmarkedsbidrag_grundlag");
-  let arbejdsmarkedsbidrag_sats = document.getElementById("arbejdsmarkedsbidrag_sats");
-  let arbejdsmarkedsbidrag_beløb = document.getElementById("arbejdsmarkedsbidrag_beløb");
+  let arbejdsmarkedsbidrag_grundlag = document.getElementById(
+    "arbejdsmarkedsbidrag_grundlag"
+  );
+  let arbejdsmarkedsbidrag_sats = document.getElementById(
+    "arbejdsmarkedsbidrag_sats"
+  );
+  let arbejdsmarkedsbidrag_beløb = document.getElementById(
+    "arbejdsmarkedsbidrag_beløb"
+  );
 
   let askat_grundlag = document.getElementById("askat_grundlag");
   let askat_sats = document.getElementById("askat_sats");
@@ -707,13 +738,23 @@ function updatePaysheet() {
 
   let personalerabat_beløb = document.getElementById("personalerabat_beløb");
 
-  let personaleforening_beløb = document.getElementById("personaleforening_beløb");
+  let personaleforening_beløb = document.getElementById(
+    "personaleforening_beløb"
+  );
 
-  let opsparet_fritvalgsaftale_grundlag = document.getElementById("opsparet_fritvalgsaftale_grundlag");
-  let opsparet_fritvalgsaftale_sats = document.getElementById("opsparet_fritvalgsaftale_sats");
-  let opsparet_fritvalgsaftale_beløb = document.getElementById("opsparet_fritvalgsaftale_beløb");
+  let opsparet_fritvalgsaftale_grundlag = document.getElementById(
+    "opsparet_fritvalgsaftale_grundlag"
+  );
+  let opsparet_fritvalgsaftale_sats = document.getElementById(
+    "opsparet_fritvalgsaftale_sats"
+  );
+  let opsparet_fritvalgsaftale_beløb = document.getElementById(
+    "opsparet_fritvalgsaftale_beløb"
+  );
 
-  let opsparet_feriepenge_beløb = document.getElementById("opsparet_feriepenge_beløb");
+  let opsparet_feriepenge_beløb = document.getElementById(
+    "opsparet_feriepenge_beløb"
+  );
 
   let personbidrag = document.getElementById("personbidrag");
   let personbidrag_sats = document.getElementById("personbidrag_sats");
@@ -727,18 +768,25 @@ function updatePaysheet() {
     .then((response) => response.json())
     .then((data) => {
       timeløn_sats.value = data[currentIndex][2].timeløn_sats;
-      forskudttimer_aften_sats.value = data[currentIndex][2].forskudttimer_aften_sats;
-      forskudttimer_lørdag_sats.value = data[currentIndex][2].forskudttimer_lørdag_sats;
-      forskudttimer_søndag_sats.value = data[currentIndex][2].forskudttimer_søndag_sats;
+      forskudttimer_aften_sats.value =
+        data[currentIndex][2].forskudttimer_aften_sats;
+      forskudttimer_lørdag_sats.value =
+        data[currentIndex][2].forskudttimer_lørdag_sats;
+      forskudttimer_søndag_sats.value =
+        data[currentIndex][2].forskudttimer_søndag_sats;
       sygdom_antal.value = data[currentIndex][2].sygdom_antal;
       sygdom_sats.value = data[currentIndex][2].timeløn_sats;
       PFA_sats.value = data[currentIndex][2].PFA_sats;
-      udbetalingFritvalgs_beløb.value = data[currentIndex][2].udbetalingFritvalgs_beløb;
-      udbetalingFeriepenge_beløb.value = data[currentIndex][2].udbetalingFeriepenge_beløb;
-      arbejdsmarkedsbidrag_sats.value = data[currentIndex][2].arbejdsmarkedsbidrag_sats;
+      udbetalingFritvalgs_beløb.value =
+        data[currentIndex][2].udbetalingFritvalgs_beløb;
+      udbetalingFeriepenge_beløb.value =
+        data[currentIndex][2].udbetalingFeriepenge_beløb;
+      arbejdsmarkedsbidrag_sats.value =
+        data[currentIndex][2].arbejdsmarkedsbidrag_sats;
       askat_sats.value = data[currentIndex][2].askat_sats;
       personalerabat_beløb.value = data[currentIndex][2].personalerabat_beløb;
-      opsparet_fritvalgsaftale_sats.value = data[currentIndex][2].opsparet_fritvalgsaftale_sats;
+      opsparet_fritvalgsaftale_sats.value =
+        data[currentIndex][2].opsparet_fritvalgsaftale_sats;
       personbidrag_sats.value = data[currentIndex][2].personbidrag_sats;
     });
 
@@ -779,13 +827,19 @@ function updatePaysheet() {
       timeløn_beløb.value = (normalTime * timeløn_sats.value).toFixed(2);
 
       forskudttimer_aften_antal.innerHTML = eveningTime;
-      forskudttimer_aften_beløb.value = (eveningTime * forskudttimer_aften_sats.value).toFixed(2);
+      forskudttimer_aften_beløb.value = (
+        eveningTime * forskudttimer_aften_sats.value
+      ).toFixed(2);
 
       forskudttimer_lørdag_antal.innerHTML = saturdayTime;
-      forskudttimer_lørdag_beløb.value = (saturdayTime * forskudttimer_lørdag_sats.value).toFixed(2);
+      forskudttimer_lørdag_beløb.value = (
+        saturdayTime * forskudttimer_lørdag_sats.value
+      ).toFixed(2);
 
       forskudttimer_søndag_antal.innerHTML = sundayTime;
-      forskudttimer_søndag_beløb.value = (sundayTime * forskudttimer_søndag_sats.value).toFixed(2);
+      forskudttimer_søndag_beløb.value = (
+        sundayTime * forskudttimer_søndag_sats.value
+      ).toFixed(2);
 
       sygdom_beløb.value = (sygdom_antal.value * timeløn_sats.value).toFixed(2);
 
@@ -824,10 +878,18 @@ function updatePaysheet() {
         +ATP_beløb.value
       ).toFixed(2);
 
-      arbejdsmarkedsbidrag_beløb.value = (+arbejdsmarkedsbidrag_sats.value * +arbejdsmarkedsbidrag_grundlag.innerHTML).toFixed(2);
+      arbejdsmarkedsbidrag_beløb.value = (
+        +arbejdsmarkedsbidrag_sats.value *
+        +arbejdsmarkedsbidrag_grundlag.innerHTML
+      ).toFixed(2);
 
-      askat_grundlag.innerHTML = (+arbejdsmarkedsbidrag_grundlag.innerHTML + +arbejdsmarkedsbidrag_beløb.value).toFixed(2);
-      askat_beløb.value = (+askat_grundlag.innerHTML * +askat_sats.value).toFixed(2);
+      askat_grundlag.innerHTML = (
+        +arbejdsmarkedsbidrag_grundlag.innerHTML +
+        +arbejdsmarkedsbidrag_beløb.value
+      ).toFixed(2);
+      askat_beløb.value = (
+        +askat_grundlag.innerHTML * +askat_sats.value
+      ).toFixed(2);
 
       let personaleforeningbeløb = -20;
       let amount10valueLOW = 0;
@@ -844,16 +906,23 @@ function updatePaysheet() {
         +forskudttimer_søndag_beløb.value +
         +sygdom_beløb.value
       ).toFixed(2);
-      opsparet_fritvalgsaftale_beløb.value = (+opsparet_fritvalgsaftale_grundlag.innerHTML * +opsparet_fritvalgsaftale_sats.value).toFixed(2);
+      opsparet_fritvalgsaftale_beløb.value = (
+        +opsparet_fritvalgsaftale_grundlag.innerHTML *
+        +opsparet_fritvalgsaftale_sats.value
+      ).toFixed(2);
 
-      opsparet_feriepenge_beløb.value = (opsparet_fritvalgsaftale_grundlag.innerHTML * 0.125).toFixed(2);
+      opsparet_feriepenge_beløb.value = (
+        opsparet_fritvalgsaftale_grundlag.innerHTML * 0.125
+      ).toFixed(2);
 
       personbidrag.innerHTML = (
         +opsparet_fritvalgsaftale_grundlag.innerHTML +
         +opsparet_feriepenge_beløb.value +
         +opsparet_fritvalgsaftale_beløb.value
       ).toFixed(2);
-      personbidrag_beløb.value = (+personbidrag.innerHTML * +personbidrag_sats.value).toFixed(2);
+      personbidrag_beløb.value = (
+        +personbidrag.innerHTML * +personbidrag_sats.value
+      ).toFixed(2);
 
       udbetaling_beløb.value = (
         +timeløn_beløb.value +
@@ -885,7 +954,7 @@ function updatePaysheet() {
 }
 
 let paysheet_edit_active = false;
-let paysheet_edit_button = document.getElementById("paysheet_editbutton")
+let paysheet_edit_button = document.getElementById("paysheet_editbutton");
 let editable = document.querySelectorAll(".editable");
 
 function updatePaysheetRates() {
@@ -893,15 +962,15 @@ function updatePaysheetRates() {
   if (paysheet_edit_active) {
     paysheet_edit_button.innerHTML = `<i class="fa-solid fa-floppy-disk fa-xl"style="color: rgb(52, 73, 94);"></i>`;
     editable.forEach((input) => {
-      input.classList.add("edit_active")
+      input.classList.add("edit_active");
       input.disabled = !input.disabled;
-    })
+    });
   } else {
-    paysheet_edit_button.innerHTML = `<i class="fa-solid fa-pen-to-square fa-xl"style="color: rgb(52, 73, 94);"></i>`
+    paysheet_edit_button.innerHTML = `<i class="fa-solid fa-pen-to-square fa-xl"style="color: rgb(52, 73, 94);"></i>`;
     editable.forEach((input) => {
-      input.classList.remove("edit_active")
+      input.classList.remove("edit_active");
       input.disabled = !input.disabled;
-    })
+    });
     let content = {
       timeløn_sats: timeløn_sats.value,
       forskudttimer_aften_sats: forskudttimer_aften_sats.value,
@@ -938,6 +1007,8 @@ function updatePaysheetRates() {
   }
 }
 
+updatePaysheetRates();
+
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
   data: {
@@ -955,6 +1026,7 @@ let donutChart = new Chart("progress_circle", {
     cutout: 90,
   },
 });
+donutChart.update();
 
 let monthChart = new Chart("progress_month", {
   type: "bar",
@@ -1027,10 +1099,127 @@ let monthChart = new Chart("progress_month", {
     maintainAspectRatio: false,
   },
 });
+monthChart.update();
 
-function updateMonthChart(monthData1) {
-  monthChart.data.datasets[0].data = monthData1;
+let yearChart = new Chart("progress_year", {
+  type: "bar",
+  data: {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: "#3498db",
+        borderRadius: 10,
+        yAxisID: "y",
+      },
+      {
+        data: [],
+        backgroundColor: "#4cd137",
+        borderRadius: 10,
+        yAxisID: "y1",
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        type: "linear",
+        display: true,
+        min: 0,
+        max: 100,
+        position: "left",
+        grid: {
+          display: false,
+        },
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        min: 0,
+        position: "right",
+        grid: {
+          display: false,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  },
+});
+yearChart.update();
+
+let totalChart = new Chart("progress_total", {
+  type: "bar",
+  data: {
+    labels: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: "#3498db",
+        borderRadius: 10,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        min: 0,
+        max: 110,
+        display: false,
+      },
+      x: {
+        grid: {
+          display: true,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  },
+});
+totalChart.update();
+
+function updateMonthChart(monthChartData) {
+  monthChart.data.datasets[0].data = monthChartData;
   monthChart.update();
+}
+
+function updateYearChart(yearChartData, yearChartSalary) {
+  yearChart.data.datasets[0].data = yearChartData;
+  yearChart.data.datasets[1].data = yearChartSalary;
+  yearChart.update();
+}
+
+function updateTotalChart(totalChartData) {
+  totalChart.data.datasets[0].data = totalChartData;
+  totalChart.update();
 }
 
 function updateListedShifts() {
@@ -1212,284 +1401,10 @@ function holyShift(event) {
         body: JSON.stringify({ tdId, content, currentIndex }),
       })
         .then((response) => response.json())
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => console.error("Error:", error));
     }
     updateListedShifts();
     loadCell();
   }
 }
-
-function updateYearStats() {
-  let yearHours = document.getElementById("yearHours");
-  let yearEvening = document.getElementById("yearEvening");
-  let yearSaturday = document.getElementById("yearSaturday");
-  let yearSunday = document.getElementById("yearSunday");
-  let yearBreak = document.getElementById("yearBreak");
-  let yearMoney = document.getElementById("yearMoney");
-  let yearAIncome = document.getElementById("yearAIncome");
-  let yearPerks = document.getElementById("yearPerks");
-  let yearSick = document.getElementById("yearSick");
-  let yearTax = document.getElementById("yearTax");
-  let yearATP = document.getElementById("yearATP");
-  let yearLBC = document.getElementById("yearLBC");
-  let yearAdditionalPerk = document.getElementById("yearAdditionalPerk");
-  let yearHoliday = document.getElementById("yearHoliday");
-  let sumMoney = 0;
-  let sumAIncome = 0;
-  let sumPerks = 0;
-  let sumHours = 0;
-  let sumEvening = 0;
-  let sumSaturday = 0;
-  let sumSunday = 0;
-  let sumBreak = 0;
-  let sumSick = 0;
-  let sumTax = 0;
-  let sumATP = 0;
-  let sumPension = 0;
-  let sumLBC = 0;
-  let sumAdditionalPerk = 0;
-  let sumHoliday = 0;
-
-  fetch(`/paysheetRates?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      for (let i = 0; i < 12; i++) {
-        sumMoney += parseInt(data[i][2].udbetaling_beløb);
-        sumAIncome += parseInt(data[i][2].arbejdsmarkedsbidrag_grundlag);
-        sumPerks += parseInt(data[i][2].personalerabat_beløb);
-        sumTax += parseInt(data[i][2].askat_beløb);
-        sumLBC += parseInt(data[i][2].arbejdsmarkedsbidrag_beløb);
-        sumATP += parseInt(data[i][2].ATP_beløb);
-        sumPension += parseInt(data[i][2].PFA_beløb);
-        sumAdditionalPerk +=
-          parseInt(data[i][2].udbetalingFritvalgs_beløb) * 0.92 * 0.62;
-
-        sumHoliday += parseInt(data[i][2].udbetalingFeriepenge_beløb) * 0.92 * 0.62;
-        sumSick += parseInt(data[i][2].sygdom_antal);
-      }
-      yearMoney.innerHTML = "$ " + sumMoney;
-      yearAIncome.innerHTML = "$ " + sumAIncome;
-      yearPerks.innerHTML = "$ " + sumPerks;
-      yearTax.innerHTML = "$ " + sumTax;
-      yearLBC.innerHTML = "$ " + sumLBC;
-      yearAdditionalPerk.innerHTML = "$ " + sumAdditionalPerk.toFixed(0);
-      yearHoliday.innerHTML = "$ " + sumHoliday.toFixed(0);
-      yearATP.innerHTML = "$ " + sumATP.toFixed(0);
-      yearPension.innerHTML = "$ " + sumPension.toFixed(0);
-      yearSick.innerHTML = sumSick + "h";
-    });
-
-  fetch(`/data?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      for (let i = 0; i < 12; i++) {
-        for (let j = 0; j < 42; j++) {
-          if (data[i][0][j] !== null) {
-            sumHours += data[i][0][j].time;
-            sumEvening += data[i][0][j].evening;
-            sumSaturday += data[i][0][j].saturday;
-            sumSunday += data[i][0][j].sunday;
-            sumBreak += data[i][0][j].lunch;
-          }
-        }
-      }
-      yearHours.innerHTML = sumHours + " h";
-      yearEvening.innerHTML = sumEvening + " h";
-      yearSaturday.innerHTML = sumSaturday + " h";
-      yearSunday.innerHTML = sumSunday + " h";
-      yearBreak.innerHTML = sumBreak + " h";
-    });
-}
-
-updateYearStats();
-
-let graphNames = [
-  "Normal hours",
-  "Evening hours",
-  "Saturday hours",
-  "Sunday hours",
-  "Breaks",
-  "Payouts",
-  "Average rate",
-  "Perks",
-  "Sick hours",
-];
-
-let yearChart = new Chart("progress_year", {
-  type: "bar",
-  data: {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
-    datasets: [
-      {
-        data: [],
-      },
-    ],
-  },
-  options: {
-    borderColor: "#3498db",
-    pointStyle: false,
-    indexAxis: "y",
-    scales: {
-      y: {
-        display: true,
-        grid: {
-          display: false,
-        },
-      },
-      x: {
-        display: true,
-        grid: {
-          display: true,
-        },
-        ticks: {
-          color: (context) => {
-            if (context.index === currentIndex) {
-              return "#3498db";
-            } else {
-              return "#717577";
-            }
-          },
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-  },
-});
-
-let allGraphs = [];
-
-changeGraph();
-
-function changeGraph(direction) {
-  allGraphs = [];
-
-  let graph_center = document.getElementById("graph_center");
-  let graph_back = document.getElementById("graph_back");
-  let graph_next = document.getElementById("graph_next");
-  if (direction == "prev") {
-    if (currentGraph > 0) {
-      currentGraph--;
-    }
-  }
-  if (direction == "next") {
-    if (currentGraph < 8) {
-      currentGraph++;
-    }
-  }
-
-  if (currentGraph == 0) {
-    graph_back.style.opacity = 0;
-    graph_back.style.pointerEvents = "none";
-  } else {
-    graph_back.style.opacity = 1;
-    graph_back.style.pointerEvents = "auto";
-  }
-  if (currentGraph == 8) {
-    graph_next.style.opacity = 0;
-    graph_next.style.pointerEvents = "none";
-  } else {
-    graph_next.style.opacity = 1;
-    graph_next.style.pointerEvents = "auto";
-  }
-
-  let yearHours = [];
-  let yearEvening = [];
-  let yearSaturday = [];
-  let yearSunday = [];
-  let yearBreaks = [];
-  let yearMoney = [];
-  let yearAverage = [];
-  let yearPerks = [];
-  let yearSickHours = [];
-
-  Promise.all([
-    fetch(`/data?currentYear=${currentYear}`).then((response) =>
-      response.json()
-    ),
-    fetch(`/paysheetRates?currentYear=${currentYear}`).then((response) => response.json()),
-  ]).then(([data, paysheetRates]) => {
-    // Process data from the first fetch call
-    for (let k = 0; k < 12; k++) {
-      let sum_yearHours = 0;
-      let sum_yearEvening = 0;
-      let sum_yearSaturday = 0;
-      let sum_yearSunday = 0;
-      let sum_yearBreaks = 0;
-      for (let j = 0; j < 42; j++) {
-        if (data[k][0][j] !== null) {
-          sum_yearHours += data[k][0][j].time;
-          sum_yearEvening += data[k][0][j].evening;
-          sum_yearSaturday += data[k][0][j].saturday;
-          sum_yearSunday += data[k][0][j].sunday;
-          sum_yearBreaks += data[k][0][j].lunch;
-        }
-      }
-      yearHours.push(sum_yearHours);
-      yearEvening.push(sum_yearEvening);
-      yearSaturday.push(sum_yearSaturday);
-      yearSunday.push(sum_yearSunday);
-      yearBreaks.push(sum_yearBreaks);
-      yearAverage.push((paysheetRates[k][2].udbetaling_beløb / sum_yearHours).toFixed(0));
-    }
-
-    // Process data from the second fetch call (paysheetRates)
-    for (let i = 0; i < 12; i++) {
-      yearMoney.push(parseInt(paysheetRates[i][2].udbetaling_beløb));
-      yearPerks.push(parseInt(paysheetRates[i][2].personalerabat_beløb));
-      yearSickHours.push(paysheetRates[i][2].sygdom_antal);
-    }
-
-    allGraphs.push(yearHours);
-    allGraphs.push(yearEvening);
-    allGraphs.push(yearSaturday);
-    allGraphs.push(yearSunday);
-    allGraphs.push(yearBreaks);
-    allGraphs.push(yearMoney);
-    allGraphs.push(yearAverage);
-    allGraphs.push(yearPerks);
-    allGraphs.push(yearSickHours);
-
-    // Update the chart here, inside the Promise.all().then() block
-    let yearData = allGraphs[currentGraph];
-    yearChart.data.datasets[0].data = yearData;
-    yearChart.update();
-
-    // Update button text
-    graph_back.innerHTML = graphNames[currentGraph - 1];
-    graph_center.innerHTML = graphNames[currentGraph];
-    graph_next.innerHTML = graphNames[currentGraph + 1];
-  });
-}
-
-graph_back.addEventListener("click", function () {
-  changeGraph("prev");
-});
-
-graph_next.addEventListener("click", function () {
-  changeGraph("next");
-});
-
-donutChart.update();
-yearChart.update();
-monthChart.update();
-

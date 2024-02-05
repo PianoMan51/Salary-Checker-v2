@@ -78,7 +78,6 @@ app.get("/data", (req, res) => {
       return;
     }
     try {
-
       let jsonData = JSON.parse(data);
       res.json(jsonData);
     } catch (error) {
@@ -237,7 +236,6 @@ app.post("/paysheetRates", (req, res) => {
     );
   });
 });
-
 
 // Start the server
 

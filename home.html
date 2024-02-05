@@ -436,6 +436,7 @@
                                     <option value="20:45">20:45</option>
                                     <option value="21:00">21:00</option>
                                     <option value="21:15" selected>21:15</option>
+                                    <option value="21:30">21:30</option>
                                 </select>
                             </div>
                             <div id="quickSelects">
@@ -709,40 +710,21 @@
                     </div>
                 </div>
                 <div class="page" id="page_nav4">
-                    <div class="content_section left page_section" id="graphsContainer">
-                        <div class="white_section_left" id="graphs">
+                    <div class="content_section left page_section">
+                        <div class="white_section_left">
                             <div id="graph_year">
                                 <canvas id="progress_year"></canvas>
                             </div>
-                            <div id="graph_buttons">
-                                <button class="graph_button side" id="graph_back"></button>
-                                <button class="graph_button primary" id="graph_center"></button>
-                                <button class="graph_button side" id="graph_next"></button>
-                            </div>
-
                         </div>
-                        <div class="white_section_left" id="yearMonthContainer">
+                        <div class="white_section_left">
+                            <div id="graph_total">
+                                <canvas id="progress_total"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="content_section right page_section" id="graphs_numbers">
-                        <div class="white_section_right">
-                        </div>
-                        <div id="yearStatsContainer">
-                            <span class="yearStat" id="yearHours" stat_type="Hours"></span>
-                            <span class="yearStat" id="yearEvening" stat_type="Evening"></span>
-                            <span class="yearStat" id="yearSaturday" stat_type="Saturday"></span>
-                            <span class="yearStat" id="yearSunday" stat_type="Sunday"></span>
-                            <span class="yearStat" id="yearMoney" stat_type="Salary"></span>
-                            <span class="yearStat" id="yearAIncome" stat_type="A-income"></span>
-                            <span class="yearStat" id="yearTax" stat_type="A-tax"></span>
-                            <span class="yearStat" id="yearLBC" stat_type="LBC"></span>
-                            <span class="yearStat" id="yearATP" stat_type="ATP"></span>
-                            <span class="yearStat" id="yearPension" stat_type="Pension"></span>
-                            <span class="yearStat" id="yearPerks" stat_type="Perks"></span>
-                            <span class="yearStat" id="yearAdditionalPerk" stat_type="Additional"></span>
-                            <span class="yearStat" id="yearHoliday" stat_type="Holiday"></span>
-                            <span class="yearStat" id="yearSick" stat_type="Sick"></span>
-                            <span class="yearStat" id="yearBreak" stat_type="Lunch"></span>
+                    <div class=" content_section right page_section">
+                        <div class="white_section_right" id="stats_right">
+
                         </div>
 
                     </div>
