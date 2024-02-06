@@ -610,11 +610,15 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+
+}
+
+.section {
   transform: scale(1);
   transition: all ease-in-out 0.2s;
 }
 
-.label:hover {
+.section:hover {
   transform: scale(1.03);
   transition: all ease-in-out 0.2s;
 }

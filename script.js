@@ -11,7 +11,7 @@ let holyButton = document.getElementById("calendar_holy");
 let editShiftSection = document.getElementById("editShift");
 let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
-let currentYear = localStorage.getItem("currentYear") || 2023;
+let currentYear = localStorage.getItem("currentYear") || 2024;
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
 let bottomButton = document.getElementById("bottomButton");
@@ -22,6 +22,7 @@ let paysheet = document.getElementById("paysheet");
 let preview = document.getElementById("preview");
 let shiftList = document.getElementById("shiftListContainer");
 let shiftDetails = document.getElementById("shiftDetails");
+let yearButtons = document.querySelectorAll(".year");
 let deleteActive = false;
 let editActive = false;
 let sickActive = false;
@@ -43,7 +44,6 @@ let monthNames = [
   "November",
   "December",
 ];
-
 changeMonth();
 
 deleteButton.addEventListener("click", () => {
@@ -91,7 +91,8 @@ editButton.addEventListener("click", () => {
   if (editActive == true) {
     editShiftSection.style.display = "flex";
     quickSelects.style.display = "none";
-  } else {
+  }
+  else {
     editShiftSection.style.display = "none";
     quickSelects.style.display = "flex";
 
@@ -114,6 +115,7 @@ editButton.addEventListener("click", () => {
       state: 0,
       currentIndex: currentIndex,
     };
+
     fetch(`/data/${currentIndex}/${number}?currentYear=${currentYear}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -139,16 +141,6 @@ editButton.addEventListener("click", () => {
   }
   loadCell();
 });
-
-let yearButtons = document.querySelectorAll(".year");
-
-let currentYearBtn = document.getElementById("year" + currentYear);
-
-yearButtons.forEach((otherYear) => {
-  otherYear.style.backgroundColor = "var(--gray)";
-  otherYear.classList.remove("active");
-});
-currentYearBtn.style.backgroundColor = "var(--darkergray)";
 
 yearButtons.forEach((year) => {
   year.addEventListener("click", function () {
@@ -458,127 +450,125 @@ let addShift = (event) => {
   let tdId = event.target.id;
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
-    if (
-      deleteActive === false &&
-      sickActive === false &&
-      holyActive === false &&
-      editActive === false
-    ) {
-      if (!isNaN(currentIndex)) {
-        if (document.getElementById(tdId).classList == "off") {
-          let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
-          let eveningTotal = 0;
-          let eveningHours = 0;
+    if (editActive === false) {
+      if (deleteActive === false && sickActive === false && holyActive === false
+      ) {
+        if (!isNaN(currentIndex)) {
+          if (document.getElementById(tdId).classList == "off") {
+            let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
+            let eveningTotal = 0;
+            let eveningHours = 0;
 
-          //// EVENING ////
-          if (weekday !== "Saturday" && weekday !== "Sunday") {
-            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-            let eveningStart = new Date(`2000-01-01T18:00:00`);
+            //// EVENING ////
+            if (weekday !== "Saturday" && weekday !== "Sunday") {
+              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+              let eveningStart = new Date(`2000-01-01T18:00:00`);
 
-            if (shiftEnd <= eveningStart) {
-              // If the shift ends before or exactly at 6 pm, no extra hours are worked on evening
-              eveningHours = 0;
-            } else if (shiftStart >= eveningStart) {
-              // If the shift starts after or exactly at 6 pm, all hours of the shift are considered extra
-              eveningTotal = shiftEnd - shiftStart;
-              eveningHours =
-                eveningTotal / (1000 * 60 * 60) -
-                calculateLunch(start.value, end.value);
-            } else {
-              // If the shift starts before 6 pm and ends after 6 pm, calculate the extra hours worked after 3 pm
-              eveningTotal = shiftEnd - eveningStart;
-              eveningHours =
-                eveningTotal / (1000 * 60 * 60) -
+              if (shiftEnd <= eveningStart) {
+                // If the shift ends before or exactly at 6 pm, no extra hours are worked on evening
+                eveningHours = 0;
+              } else if (shiftStart >= eveningStart) {
+                // If the shift starts after or exactly at 6 pm, all hours of the shift are considered extra
+                eveningTotal = shiftEnd - shiftStart;
+                eveningHours =
+                  eveningTotal / (1000 * 60 * 60) -
+                  calculateLunch(start.value, end.value);
+              } else {
+                // If the shift starts before 6 pm and ends after 6 pm, calculate the extra hours worked after 3 pm
+                eveningTotal = shiftEnd - eveningStart;
+                eveningHours =
+                  eveningTotal / (1000 * 60 * 60) -
+                  calculateLunch(start.value, end.value);
+              }
+            }
+
+            //// SATURDAY ////
+            let saturdayTotal = 0;
+            let saturdayHours = 0;
+            if (weekday == "Saturday") {
+              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+              let saturdayStart = new Date(`2000-01-01T15:00:00`);
+
+              if (shiftEnd <= saturdayStart) {
+                // If the shift ends before or exactly at 3 pm, no extra hours are worked on Saturday
+                saturdayHours = 0;
+                saturdayTotal = shiftEnd - shiftStart;
+              } else if (shiftStart >= saturdayStart) {
+                // If the shift starts after or exactly at 3 pm, all hours of the shift are considered extra
+                saturdayTotal = shiftEnd - shiftStart;
+                saturdayHours =
+                  saturdayTotal / (1000 * 60 * 60) -
+                  calculateLunch(start.value, end.value);
+              } else {
+                // If the shift starts before 3 pm and ends after 3 pm, calculate the extra hours worked after 3 pm
+                saturdayTotal = shiftEnd - saturdayStart;
+                saturdayHours =
+                  saturdayTotal / (1000 * 60 * 60) -
+                  calculateLunch(start.value, end.value);
+              }
+            }
+
+            //// SUNDAY ////
+            let sundayHours = 0;
+            let sundayTotal = 0;
+            if (weekday == "Sunday") {
+              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+              sundayTotal = shiftEnd - shiftStart;
+              sundayHours =
+                sundayTotal / (1000 * 60 * 60) -
                 calculateLunch(start.value, end.value);
             }
-          }
 
-          //// SATURDAY ////
-          let saturdayTotal = 0;
-          let saturdayHours = 0;
-          if (weekday == "Saturday") {
-            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-            let saturdayStart = new Date(`2000-01-01T15:00:00`);
-
-            if (shiftEnd <= saturdayStart) {
-              // If the shift ends before or exactly at 3 pm, no extra hours are worked on Saturday
-              saturdayHours = 0;
-              saturdayTotal = shiftEnd - shiftStart;
-            } else if (shiftStart >= saturdayStart) {
-              // If the shift starts after or exactly at 3 pm, all hours of the shift are considered extra
-              saturdayTotal = shiftEnd - shiftStart;
-              saturdayHours =
-                saturdayTotal / (1000 * 60 * 60) -
-                calculateLunch(start.value, end.value);
-            } else {
-              // If the shift starts before 3 pm and ends after 3 pm, calculate the extra hours worked after 3 pm
-              saturdayTotal = shiftEnd - saturdayStart;
-              saturdayHours =
-                saturdayTotal / (1000 * 60 * 60) -
-                calculateLunch(start.value, end.value);
-            }
-          }
-
-          //// SUNDAY ////
-          let sundayHours = 0;
-          let sundayTotal = 0;
-          if (weekday == "Sunday") {
-            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
-            sundayTotal = shiftEnd - shiftStart;
-            sundayHours =
-              sundayTotal / (1000 * 60 * 60) -
-              calculateLunch(start.value, end.value);
-          }
-
-          let startValue = document.getElementById("startTime").value;
-          let endValue = document.getElementById("endTime").value;
-          let content = {
-            start: startValue,
-            end: endValue,
-            time: calculateTimeDifference(start.value, end.value),
-            lunch: calculateLunch(start.value, end.value),
-            evening: eveningHours,
-            saturday: saturdayHours,
-            sunday: sundayHours,
-            state: 0,
-          };
-          fetch(`/data?currentYear=${currentYear}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ tdId, content, currentIndex }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              loadCell();
+            let startValue = document.getElementById("startTime").value;
+            let endValue = document.getElementById("endTime").value;
+            let content = {
+              start: startValue,
+              end: endValue,
+              time: calculateTimeDifference(start.value, end.value),
+              lunch: calculateLunch(start.value, end.value),
+              evening: eveningHours,
+              saturday: saturdayHours,
+              sunday: sundayHours,
+              state: 0,
+            };
+            fetch(`/data?currentYear=${currentYear}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ tdId, content, currentIndex }),
             })
-            .catch((error) => console.error("Error:", error));
+              .then((response) => response.json())
+              .then((data) => {
+                loadCell();
+              })
+              .catch((error) => console.error("Error:", error));
+          }
+          updateListedShifts();
         }
-        updateListedShifts();
-      }
-    } else {
-      let nothing = null;
-      if (event.target.classList.contains("sick")) {
-        event.target.classList.remove("sick");
-      }
-      fetch(`/data?currentYear=${currentYear}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ tdId, nothing, currentIndex }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          loadCell();
+      } else {
+        let nothing = null;
+        if (event.target.classList.contains("sick")) {
+          event.target.classList.remove("sick");
+        }
+        fetch(`/data?currentYear=${currentYear}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ tdId, nothing, currentIndex }),
         })
-        .catch((error) => console.error("Error:", error));
-      updateListedShifts();
-      loadCell();
+          .then((response) => response.json())
+          .then((data) => {
+            loadCell();
+          })
+          .catch((error) => console.error("Error:", error));
+        updateListedShifts();
+        loadCell();
+      }
     }
   }
   updatePaysheet();
@@ -640,20 +630,39 @@ updatePaysheet();
 function changeMonth(direction) {
   loadCell();
 
+
   let currentMonthSpan = document.getElementById("currentMonth");
   let currentMonth = currentMonthSpan.innerHTML;
   currentIndex = monthNames.indexOf(currentMonth);
 
+
+
   if (direction === "prev") {
     currentIndex = (currentIndex - 1 + 12) % 12;
+    if (currentIndex === 11) {
+      currentYear--;
+
+    }
   } else if (direction === "next") {
     currentIndex = (currentIndex + 1) % 12;
+    if (currentIndex === 0) {
+      currentYear++;
+    }
   } else {
     currentIndex = localStorage.getItem("currentIndex") || 0;
   }
 
-  localStorage.setItem("currentIndex", currentIndex);
 
+  let currentYearBtn = document.getElementById("year" + currentYear);
+  yearButtons.forEach((otherYear) => {
+    otherYear.style.backgroundColor = "var(--gray)";
+    otherYear.classList.remove("active");
+  });
+  currentYearBtn.style.backgroundColor = "var(--darkergray)";
+
+
+  localStorage.setItem("currentIndex", currentIndex);
+  localStorage.setItem("currentYear", currentYear);
   currentMonthSpan.innerHTML = monthNames[currentIndex];
   let money_preview_month = document.getElementById("money_preview_month");
   money_preview_month.innerHTML = "Month of " + currentMonthSpan.innerHTML;
@@ -1105,17 +1114,17 @@ let yearChart = new Chart("progress_year", {
   type: "bar",
   data: {
     labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
     ],
     datasets: [
       {
@@ -1147,6 +1156,8 @@ let yearChart = new Chart("progress_year", {
       y1: {
         type: "linear",
         display: true,
+        min: 0,
+        max: 10000,
         min: 0,
         position: "right",
         grid: {
@@ -1401,7 +1412,7 @@ function holyShift(event) {
         body: JSON.stringify({ tdId, content, currentIndex }),
       })
         .then((response) => response.json())
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => console.error("Error:", error));
     }
     updateListedShifts();
