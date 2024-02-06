@@ -451,7 +451,7 @@ let addShift = (event) => {
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
     if (editActive === false) {
-      if (deleteActive === false && sickActive === false && holyActive === false
+      if (deleteActive === false && holyActive === false
       ) {
         if (!isNaN(currentIndex)) {
           if (document.getElementById(tdId).classList == "off") {
@@ -592,6 +592,7 @@ Array.from(tdElements).forEach((td) => {
         });
     }
   });
+  //sick
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("sick")) {
       number = parseInt(td.id.match(/\d+/)[0]);
@@ -602,6 +603,7 @@ Array.from(tdElements).forEach((td) => {
         });
     }
   });
+  //holy
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("holy")) {
       number = parseInt(td.id.match(/\d+/)[0]);
@@ -620,6 +622,47 @@ Array.from(tdElements).forEach((td) => {
         .then((data) => {
           td.innerHTML = "Public Holiday";
         });
+    }
+  });
+  //normal
+  td.addEventListener("mouseover", function () {
+    if (td.classList.contains("on")) {
+      number = parseInt(td.id.match(/\d+/)[0]);
+      fetch(`/data?currentYear=${currentYear}`)
+        .then((response) => response.json())
+        .then((data) => {
+          td.innerHTML =
+            data[currentIndex][0][number].time + "h";
+          td.style.fontSize = "16px"
+        });
+    }
+  });
+  td.addEventListener("mouseout", function () {
+    if (td.classList.contains("on")) {
+      number = parseInt(td.id.match(/\d+/)[0]);
+      fetch(`/data?currentYear=${currentYear}`)
+        .then((response) => response.json())
+        .then((data) => {
+          td.innerHTML =
+            data[currentIndex][0][number].start +
+            " " +
+            data[currentIndex][0][number].end;
+        });
+    }
+  });
+  //off
+  td.addEventListener("mouseover", function () {
+    if (td.classList.contains("off")) {
+      td.innerHTML = "+"
+      td.style.fontSize = "45px"
+    }
+  });
+  td.addEventListener("mouseout", function () {
+    if (td.classList.contains("off")) {
+      if (td.classList.contains("off")) {
+        td.innerHTML = ""
+        td.style.fontSize = "16px"
+      }
     }
   });
 });
@@ -1011,12 +1054,10 @@ function updatePaysheetRates() {
       },
       body: JSON.stringify({ content, currentIndex }),
     });
-
     updatePaysheet();
   }
 }
 
-updatePaysheetRates();
 
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
@@ -1362,9 +1403,9 @@ function sickShift(event) {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          let Start = data[currentIndex][number].start;
-          let End = data[currentIndex][number].end;
-          let Evening = data[currentIndex][number].evening;
+          let Start = data[currentIndex][0][number].start;
+          let End = data[currentIndex][0][number].end;
+          let Evening = data[currentIndex][0][number].evening;
 
           let content = {
             start: Start,
