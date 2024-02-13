@@ -91,8 +91,7 @@ editButton.addEventListener("click", () => {
   if (editActive == true) {
     editShiftSection.style.display = "flex";
     quickSelects.style.display = "none";
-  }
-  else {
+  } else {
     editShiftSection.style.display = "none";
     quickSelects.style.display = "flex";
 
@@ -297,111 +296,112 @@ let week4 = document.getElementById("week4");
 let week5 = document.getElementById("week5");
 let week6 = document.getElementById("week6");
 
-function loadCell() {
-  fetch(`/data?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let monthData = data[currentIndex][0];
-      let tdElements = document.querySelectorAll("#calendar td");
-      let previewElements = document.querySelectorAll("#preview_calendar td");
-      let shiftCount = document.getElementById("shiftCount");
-      Array.from(tdElements).forEach((td) => {
-        td.textContent = "";
-        td.classList.add("off");
-        td.classList.remove("on");
-        td.classList.remove("sick");
-        td.classList.remove("holy");
-      });
-      Array.from(previewElements).forEach((td) => {
-        td.textContent = "";
-        td.classList.add("off");
-        td.classList.remove("on");
-      });
+async function loadCell() {
+  try {
+    const response1 = await fetch(`/data?currentYear=${currentYear}`);
+    const data1 = await response1.json();
 
-      //month-basis
-      let monthChartData = [];
-      let shiftCounter = 0;
-      for (let i = 0; i < monthData.length; i++) {
-        let tdId = "td" + i;
-        if (monthData[i] && monthData[i].start) {
-          let content = monthData[i].start + " " + monthData[i].end;
-          let tdElement = document.getElementById(tdId);
-          shiftCounter++;
-          if (tdElement) {
-            tdElement.textContent = content;
-            tdElement.classList.add("on");
-            tdElement.classList.remove("off");
-            tdElement.classList.remove("sick");
-            if (monthData[i].state == 1) {
-              tdElement.textContent = "Sick";
-              tdElement.classList.add("sick");
-              tdElement.classList.remove("on");
-              tdElement.classList.remove("off");
-            }
-            if (monthData[i].state == 2) {
-              tdElement.textContent = "Public Holiday";
-              tdElement.classList.add("holy");
-              tdElement.classList.remove("on");
-              tdElement.classList.remove("off");
-            }
-          }
-        }
-        if (monthData[i]) {
-          monthChartData.push(monthData[i].time);
-        } else {
-          monthChartData.push(0.2);
-        }
-      }
-
-      //year-basis
-      //all years
-      let monthTotal = 0;
-      //let yearTotal = 0;
-      let yearChartData = [];
-      let yearChartSalary = [];
-      //let totalChartData = [];
-      for (let i = 0; i < data.length; i++) {
-        monthTotal = 0;
-        yearTotal = 0;
-        for (let j = 0; j < monthData.length; j++) {
-          if (data[i][0][j]) {
-            monthTotal += data[i][0][j].time;
-          }
-          //yearTotal += monthTotal;
-        }
-        yearChartSalary.push(data[i][2].udbetaling_beløb);
-        yearChartData.push(monthTotal);
-        //totalChartData.push(yearTotal);
-      }
-
-      shiftCount.innerHTML = shiftCounter;
-      updateMonthChart(monthChartData);
-      updateYearChart(yearChartData, yearChartSalary);
-      // updateTotalChart(totalChartData);
-
-      for (let i = 0; i < monthData.length; i++) {
-        let tdId = "tdp" + i;
-        if (monthData[i] && monthData[i].start) {
-          let previewElememt = document.getElementById(tdId);
-          previewElememt.classList.add("on");
-          previewElememt.classList.remove("off");
-        }
-      }
-    })
-    .catch((error) => console.error("Error:", error));
-
-  fetch(`/weekNo?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let weekNumbers = data[currentIndex][1];
-
-      week1.value = weekNumbers.week1;
-      week2.value = weekNumbers.week2;
-      week3.value = weekNumbers.week3;
-      week4.value = weekNumbers.week4;
-      week5.value = weekNumbers.week5;
-      week6.value = weekNumbers.week6;
+    let monthData = data1[currentIndex][0];
+    let tdElements = document.querySelectorAll("#calendar td");
+    let previewElements = document.querySelectorAll("#preview_calendar td");
+    let shiftCount = document.getElementById("shiftCount");
+    Array.from(tdElements).forEach((td) => {
+      td.textContent = "";
+      td.classList.add("off");
+      td.classList.remove("on");
+      td.classList.remove("sick");
+      td.classList.remove("holy");
     });
+    Array.from(previewElements).forEach((td) => {
+      td.textContent = "";
+      td.classList.add("off");
+      td.classList.remove("on");
+    });
+
+    //month-basis
+    let monthChartData = [];
+    let shiftCounter = 0;
+    for (let i = 0; i < monthData.length; i++) {
+      let tdId = "td" + i;
+      if (monthData[i] && monthData[i].start) {
+        let content = monthData[i].start + " " + monthData[i].end;
+        let tdElement = document.getElementById(tdId);
+        shiftCounter++;
+        if (tdElement) {
+          tdElement.textContent = content;
+          tdElement.classList.add("on");
+          tdElement.classList.remove("off");
+          tdElement.classList.remove("sick");
+          if (monthData[i].state == 1) {
+            tdElement.textContent = "Sick";
+            tdElement.classList.add("sick");
+            tdElement.classList.remove("on");
+            tdElement.classList.remove("off");
+          }
+          if (monthData[i].state == 2) {
+            tdElement.textContent = "Public Holiday";
+            tdElement.classList.add("holy");
+            tdElement.classList.remove("on");
+            tdElement.classList.remove("off");
+          }
+        }
+      }
+      if (monthData[i]) {
+        monthChartData.push(monthData[i].time);
+      } else {
+        monthChartData.push(0.2);
+      }
+    }
+
+    //year-basis
+    //all years
+    let monthTotal = 0;
+    let yearTotal = 0;
+    let yearChartData = [];
+    let yearChartSalary = [];
+    for (let i = 0; i < data1.length; i++) {
+      monthTotal = 0;
+      yearTotal = 0;
+      for (let j = 0; j < monthData.length; j++) {
+        if (data1[i][0][j]) {
+          monthTotal += data1[i][0][j].time;
+        }
+      }
+
+      yearChartSalary.push(data1[i][2].udbetaling_beløb);
+      yearChartData.push(monthTotal);
+    }
+
+    shiftCount.innerHTML = shiftCounter;
+    updateMonthChart(monthChartData);
+    updateYearChart(yearChartData, yearChartSalary);
+
+    for (let i = 0; i < monthData.length; i++) {
+      let tdId = "tdp" + i;
+      if (monthData[i] && monthData[i].start) {
+        let previewElememt = document.getElementById(tdId);
+        previewElememt.classList.add("on");
+        previewElememt.classList.remove("off");
+      }
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+
+  try {
+    const response2 = await fetch(`/weekNo?currentYear=${currentYear}`);
+    const data2 = await response2.json();
+    let weekNumbers = data2[currentIndex][1];
+
+    week1.value = weekNumbers.week1;
+    week2.value = weekNumbers.week2;
+    week3.value = weekNumbers.week3;
+    week4.value = weekNumbers.week4;
+    week5.value = weekNumbers.week5;
+    week6.value = weekNumbers.week6;
+  } catch (error) {
+    console.error("Error:", error);
+  }
 
   updatePaysheet();
   updateListedShifts();
@@ -451,8 +451,7 @@ let addShift = (event) => {
   let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
     if (editActive === false) {
-      if (deleteActive === false && holyActive === false
-      ) {
+      if (deleteActive === false && holyActive === false) {
         if (!isNaN(currentIndex)) {
           if (document.getElementById(tdId).classList == "off") {
             let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
@@ -631,9 +630,8 @@ Array.from(tdElements).forEach((td) => {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML =
-            data[currentIndex][0][number].time + "h";
-          td.style.fontSize = "16px"
+          td.innerHTML = data[currentIndex][0][number].time + "h";
+          td.style.fontSize = "16px";
         });
     }
   });
@@ -653,15 +651,13 @@ Array.from(tdElements).forEach((td) => {
   //off
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("off")) {
-      td.innerHTML = "+"
-      td.style.fontSize = "45px"
+      td.innerHTML = "+";
     }
   });
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("off")) {
       if (td.classList.contains("off")) {
-        td.innerHTML = ""
-        td.style.fontSize = "16px"
+        td.innerHTML = "";
       }
     }
   });
@@ -673,18 +669,14 @@ updatePaysheet();
 function changeMonth(direction) {
   loadCell();
 
-
   let currentMonthSpan = document.getElementById("currentMonth");
   let currentMonth = currentMonthSpan.innerHTML;
   currentIndex = monthNames.indexOf(currentMonth);
-
-
 
   if (direction === "prev") {
     currentIndex = (currentIndex - 1 + 12) % 12;
     if (currentIndex === 11) {
       currentYear--;
-
     }
   } else if (direction === "next") {
     currentIndex = (currentIndex + 1) % 12;
@@ -695,14 +687,12 @@ function changeMonth(direction) {
     currentIndex = localStorage.getItem("currentIndex") || 0;
   }
 
-
   let currentYearBtn = document.getElementById("year" + currentYear);
   yearButtons.forEach((otherYear) => {
     otherYear.style.backgroundColor = "var(--gray)";
     otherYear.classList.remove("active");
   });
   currentYearBtn.style.backgroundColor = "var(--darkergray)";
-
 
   localStorage.setItem("currentIndex", currentIndex);
   localStorage.setItem("currentYear", currentYear);
@@ -840,6 +830,42 @@ function updatePaysheet() {
       opsparet_fritvalgsaftale_sats.value =
         data[currentIndex][2].opsparet_fritvalgsaftale_sats;
       personbidrag_sats.value = data[currentIndex][2].personbidrag_sats;
+      let accumulatedFritvalgskonto =
+        +data[0][2].opsparet_fritvalgsaftale_beløb;
+      let accumulatedFeriepenge = +data[0][2].opsparet_feriepenge_beløb;
+      let accumulatedUdbetalt = +data[0][2].udbetaling_beløb;
+
+      let accumFritvalgsSpan = document.getElementById("accumulatedFritvalgs");
+      let accumFeriepengeSpan = document.getElementById(
+        "accumulatedFeriepenge"
+      );
+      let accumUdbetaltSpan = document.getElementById("accumulatedUdbetaling");
+
+      for (let i = 0; i < currentIndex; i++) {
+        accumulatedFritvalgskonto += +data[i][2].opsparet_fritvalgsaftale_beløb;
+        accumulatedFeriepenge += +data[i][2].opsparet_feriepenge_beløb;
+        accumulatedUdbetalt += +data[i][2].udbetaling_beløb;
+      }
+      accumFritvalgsSpan.innerHTML =
+        "$ " + accumulatedFritvalgskonto.toFixed(2);
+      accumFeriepengeSpan.innerHTML = "$ " + accumulatedFeriepenge.toFixed(2);
+      accumUdbetaltSpan.innerHTML = "$ " + accumulatedUdbetalt.toFixed(2);
+
+      accumFritvalgsSpan.addEventListener("mouseout", function () {
+        accumFritvalgsSpan.innerHTML =
+          "$" + accumulatedFritvalgskonto.toFixed(2);
+      });
+      accumFritvalgsSpan.addEventListener("mouseover", function () {
+        accumFritvalgsSpan.innerHTML =
+          "$" + (accumulatedFritvalgskonto * 0.82 * 0.62).toFixed(2);
+      });
+      accumFeriepengeSpan.addEventListener("mouseout", function () {
+        accumFeriepengeSpan.innerHTML = "$" + accumulatedFeriepenge.toFixed(2);
+      });
+      accumFeriepengeSpan.addEventListener("mouseover", function () {
+        accumFeriepengeSpan.innerHTML =
+          "$" + (accumulatedFeriepenge * 0.82 * 0.62).toFixed(2);
+      });
     });
 
   fetch(`/data?currentYear=${currentYear}`)
@@ -1058,7 +1084,6 @@ function updatePaysheetRates() {
   }
 }
 
-
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
   data: {
@@ -1170,7 +1195,7 @@ let yearChart = new Chart("progress_year", {
     datasets: [
       {
         data: [],
-        backgroundColor: "#3498db",
+        backgroundColor: "#44bd32",
         borderRadius: 10,
         yAxisID: "y",
       },
@@ -1237,8 +1262,6 @@ let totalChart = new Chart("progress_total", {
   options: {
     scales: {
       y: {
-        min: 0,
-        max: 110,
         display: false,
       },
       x: {
@@ -1276,78 +1299,124 @@ function updateTotalChart(totalChartData) {
 
 function updateListedShifts() {
   let shiftList = document.getElementById("shiftList");
-  shiftList.innerHTML = "";
 
   fetch(`/data?currentYear=${currentYear}`)
     .then((response) => response.json())
     .then((data) => {
+      shiftList.innerHTML = "";
       for (let i = 0; i < data[currentIndex][0].length; i++) {
         let listedShiftLi = document.createElement("LI");
         let listedShiftDiv = document.createElement("DIV");
+        let listedShiftTimes = document.createElement("DIV");
         let listedShiftDay = document.createElement("SPAN");
         let listedShiftHour = document.createElement("SPAN");
         let listedShiftStart = document.createElement("SPAN");
         let listedShiftEnd = document.createElement("SPAN");
-        let listedShiftLunch = document.createElement("SPAN");
-        let listedShiftEvening = document.createElement("SPAN");
-        let listedShiftSaturday = document.createElement("SPAN");
-        let listedShiftSunday = document.createElement("SPAN");
+        let fill_before = document.createElement("div");
+        let fill_after = document.createElement("div");
 
         let day;
 
+        listedShiftTimes.setAttribute("id", "listedShiftTimes");
         listedShiftDiv.setAttribute("id", "listedShift");
+        listedShiftLi.setAttribute("id", "listedShiftLi");
+        listedShiftDay.setAttribute("id", "listedShiftDay");
+        fill_before.setAttribute("class", "fill");
+        fill_after.setAttribute("class", "fill");
 
         if (i % 7 == 6) {
-          day = "Sun";
+          day = "SUN";
         }
         if (i % 7 == 5) {
-          day = "Sat";
+          day = "SAT";
         }
         if (i % 7 == 4) {
-          day = "Fri";
+          day = "FRI";
         }
         if (i % 7 == 3) {
-          day = "Thu";
+          day = "THU";
         }
         if (i % 7 == 2) {
-          day = "Wed";
+          day = "WED";
         }
         if (i % 7 == 1) {
-          day = "Tue";
+          day = "TUE";
         }
         if (i % 7 == 0) {
-          day = "Mon";
+          day = "MON";
         }
 
-        if (data[currentIndex][0][i]) {
-          listedShiftDay.innerHTML = day;
+        let open = new Date(`2000-01-01T06:45:00`);
+        let closed = new Date(`2000-01-01T21:15:00`);
+
+        if (data[currentIndex][0][i] && data[currentIndex][0][i].state == 0) {
           listedShiftHour.innerHTML = data[currentIndex][0][i].time;
           listedShiftStart.innerHTML = data[currentIndex][0][i].start;
           listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
-          listedShiftLunch.innerHTML = data[currentIndex][0][i].lunch;
-          listedShiftEvening.innerHTML = data[currentIndex][0][i].evening;
-          listedShiftSaturday.innerHTML = data[currentIndex][0][i].saturday;
-          listedShiftSunday.innerHTML = data[currentIndex][0][i].sunday;
+
+          shiftList.appendChild(listedShiftLi);
+          listedShiftLi.appendChild(listedShiftDay);
+          listedShiftLi.appendChild(listedShiftTimes);
+
+          listedShiftTimes.append(fill_before);
+          listedShiftTimes.appendChild(listedShiftDiv);
+          listedShiftDiv.appendChild(listedShiftStart);
+          listedShiftDiv.appendChild(listedShiftEnd);
+          listedShiftDiv.appendChild(listedShiftHour);
+          listedShiftTimes.appendChild(fill_after);
+
+          let shiftStart = new Date(
+            `2000-01-01T${data[currentIndex][0][i].start}:00`
+          );
+          let shiftEnd = new Date(
+            `2000-01-01T${data[currentIndex][0][i].end}:00`
+          );
+
+          let fill_before_width = ((shiftStart - open) / 1000 / 60 / 60) * 5.7;
+          let fill_after_width = ((closed - shiftEnd) / 1000 / 60 / 60) * 5.7;
+
+          if (fill_before_width == 0) {
+            fill_before.style.width = "0%";
+          } else {
+            fill_before.style.width = "calc(" + fill_before_width + "% + 40px)";
+          }
+
+          if (fill_after_width == 0) {
+            fill_after.style.width = "0%";
+          } else {
+            fill_after.style.width = "calc(" + fill_after_width + "% + 40px)";
+          }
+        } else if (
+          data[currentIndex][0][i] &&
+          data[currentIndex][0][i].state == 2
+        ) {
+          shiftList.appendChild(listedShiftLi);
+          listedShiftLi.appendChild(listedShiftDay);
+          listedShiftLi.appendChild(listedShiftTimes);
+          listedShiftTimes.appendChild(listedShiftDiv);
+          listedShiftDiv.appendChild(listedShiftHour);
+          listedShiftHour.innerHTML =
+            "Helligdag, " + data[currentIndex][0][i].time;
+          listedShiftDiv.style.backgroundColor = "var(--background)";
+        } else if (
+          data[currentIndex][0][i] &&
+          data[currentIndex][0][i].state == 1
+        ) {
+          shiftList.appendChild(listedShiftLi);
+          listedShiftLi.appendChild(listedShiftDay);
+          listedShiftLi.appendChild(listedShiftTimes);
+          listedShiftTimes.appendChild(listedShiftDiv);
+          listedShiftDiv.appendChild(listedShiftHour);
+          listedShiftHour.innerHTML = "Sick";
+          listedShiftDiv.style.backgroundColor = "var(--red)";
         } else {
-          listedShiftDay.innerHTML = day;
-          listedShiftHour.innerHTML = "0";
-          listedShiftStart.innerHTML = "0";
-          listedShiftEnd.innerHTML = "0";
-          listedShiftLunch.innerHTML = "0";
-          listedShiftEvening.innerHTML = "0";
-          listedShiftSaturday.innerHTML = "0";
-          listedShiftSunday.innerHTML = "0";
+          shiftList.appendChild(listedShiftLi);
+          listedShiftLi.appendChild(listedShiftDay);
+          listedShiftLi.appendChild(listedShiftTimes);
+          listedShiftTimes.append(fill_before);
+          fill_before.style.width = "100%";
         }
-        shiftList.appendChild(listedShiftLi);
-        listedShiftLi.appendChild(listedShiftDiv);
-        listedShiftDiv.appendChild(listedShiftDay);
-        listedShiftDiv.appendChild(listedShiftStart);
-        listedShiftDiv.appendChild(listedShiftEnd);
-        listedShiftDiv.appendChild(listedShiftHour);
-        listedShiftDiv.appendChild(listedShiftLunch);
-        listedShiftDiv.appendChild(listedShiftEvening);
-        listedShiftDiv.appendChild(listedShiftSaturday);
-        listedShiftDiv.appendChild(listedShiftSunday);
+        listedShiftDay.innerHTML = day;
       }
     });
 }
@@ -1453,7 +1522,7 @@ function holyShift(event) {
         body: JSON.stringify({ tdId, content, currentIndex }),
       })
         .then((response) => response.json())
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => console.error("Error:", error));
     }
     updateListedShifts();
