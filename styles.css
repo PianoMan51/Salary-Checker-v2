@@ -209,6 +209,7 @@ body {
   color: white;
   display: flex;
   justify-content: space-around;
+  gap: 5px;
   font-size: small;
   flex: 1;
 }
@@ -216,7 +217,7 @@ body {
 #listedShiftDay {
   width: 40px;
   padding: 14px 20px;
-  background-color: var(--background);
+  background-color: var(--blue);
   color: white;
   border-radius: 10px;
   text-align: center;
@@ -242,7 +243,6 @@ body {
 .fill {
   background-color: var(--lightgray);
   padding: 14px 20px;
-  height: 10px;
   border-radius: 10px;
   width: 0%;
 }

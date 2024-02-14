@@ -298,10 +298,10 @@ let week6 = document.getElementById("week6");
 
 async function loadCell() {
   try {
-    const response1 = await fetch(`/data?currentYear=${currentYear}`);
-    const data1 = await response1.json();
+    const data_response = await fetch(`/data?currentYear=${currentYear}`);
+    const data = await data_response.json();
 
-    let monthData = data1[currentIndex][0];
+    let monthData = data[currentIndex][0];
     let tdElements = document.querySelectorAll("#calendar td");
     let previewElements = document.querySelectorAll("#preview_calendar td");
     let shiftCount = document.getElementById("shiftCount");
@@ -359,16 +359,16 @@ async function loadCell() {
     let yearTotal = 0;
     let yearChartData = [];
     let yearChartSalary = [];
-    for (let i = 0; i < data1.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       monthTotal = 0;
       yearTotal = 0;
       for (let j = 0; j < monthData.length; j++) {
-        if (data1[i][0][j]) {
-          monthTotal += data1[i][0][j].time;
+        if (data[i][0][j]) {
+          monthTotal += data[i][0][j].time;
         }
       }
 
-      yearChartSalary.push(data1[i][2].udbetaling_beløb);
+      yearChartSalary.push(data[i][2].udbetaling_beløb);
       yearChartData.push(monthTotal);
     }
 
@@ -389,9 +389,9 @@ async function loadCell() {
   }
 
   try {
-    const response2 = await fetch(`/weekNo?currentYear=${currentYear}`);
-    const data2 = await response2.json();
-    let weekNumbers = data2[currentIndex][1];
+    const weekNo_response = await fetch(`/weekNo?currentYear=${currentYear}`);
+    const data_weekNo = await weekNo_response.json();
+    let weekNumbers = data_weekNo[currentIndex][1];
 
     week1.value = weekNumbers.week1;
     week2.value = weekNumbers.week2;
@@ -701,6 +701,7 @@ function changeMonth(direction) {
   money_preview_month.innerHTML = "Month of " + currentMonthSpan.innerHTML;
   loadCell(currentIndex);
   updatePaysheet();
+  updateListedShifts();
 }
 
 prevBtn.addEventListener("click", function () {
@@ -816,7 +817,6 @@ function updatePaysheet() {
         data[currentIndex][2].forskudttimer_lørdag_sats;
       forskudttimer_søndag_sats.value =
         data[currentIndex][2].forskudttimer_søndag_sats;
-      sygdom_antal.value = data[currentIndex][2].sygdom_antal;
       sygdom_sats.value = data[currentIndex][2].timeløn_sats;
       PFA_sats.value = data[currentIndex][2].PFA_sats;
       udbetalingFritvalgs_beløb.value =
@@ -879,15 +879,25 @@ function updatePaysheet() {
       let eveningTime = 0;
       let saturdayTime = 0;
       let sundayTime = 0;
+      let sickTime = 0;
       for (let i = 0; i < data[currentIndex][0].length; i++) {
         if (data[currentIndex][0][i] !== null) {
-          normalTime += data[currentIndex][0][i].time;
+          if (
+            data[currentIndex][0][i].state == 0 ||
+            data[currentIndex][0][i].state == 2
+          ) {
+            normalTime += data[currentIndex][0][i].time;
+          }
+          if (data[currentIndex][0][i].state == 1) {
+            sickTime += data[currentIndex][0][i].time;
+          }
+
           eveningTime += data[currentIndex][0][i].evening;
           saturdayTime += data[currentIndex][0][i].saturday;
           sundayTime += data[currentIndex][0][i].sunday;
         }
 
-        value1.innerHTML = normalTime.toFixed(2) + " h";
+        value1.innerHTML = (+normalTime + +sickTime).toFixed(2) + " h";
         value2.innerHTML = eveningTime.toFixed(2) + " h";
         value3.innerHTML = saturdayTime.toFixed(2) + " h";
         value4.innerHTML = sundayTime.toFixed(2) + " h";
@@ -919,7 +929,11 @@ function updatePaysheet() {
         sundayTime * forskudttimer_søndag_sats.value
       ).toFixed(2);
 
-      sygdom_beløb.value = (sygdom_antal.value * timeløn_sats.value).toFixed(2);
+      sygdom_antal.innerHTML = sickTime;
+
+      sygdom_beløb.value = (
+        sygdom_antal.innerHTML * timeløn_sats.value
+      ).toFixed(2);
 
       if (timeløn_antal != 0) {
         PFA_grundlag.innerHTML = (
@@ -1062,7 +1076,6 @@ function updatePaysheetRates() {
       personalerabat_beløb: personalerabat_beløb.value,
       udbetalingFritvalgs_beløb: udbetalingFritvalgs_beløb.value,
       udbetalingFeriepenge_beløb: udbetalingFeriepenge_beløb.value,
-      sygdom_antal: sygdom_antal.value,
       udbetaling_beløb: udbetaling_beløb.value,
       arbejdsmarkedsbidrag_grundlag: arbejdsmarkedsbidrag_grundlag.textContent,
       ATP_beløb: ATP_beløb.value,
@@ -1195,7 +1208,7 @@ let yearChart = new Chart("progress_year", {
     datasets: [
       {
         data: [],
-        backgroundColor: "#44bd32",
+        backgroundColor: "#3498db",
         borderRadius: 10,
         yAxisID: "y",
       },
@@ -1349,8 +1362,11 @@ function updateListedShifts() {
         let open = new Date(`2000-01-01T06:45:00`);
         let closed = new Date(`2000-01-01T21:15:00`);
 
-        if (data[currentIndex][0][i] && data[currentIndex][0][i].state == 0) {
-          listedShiftHour.innerHTML = data[currentIndex][0][i].time;
+        if (
+          (data[currentIndex][0][i] && data[currentIndex][0][i].state == 0) ||
+          (data[currentIndex][0][i] && data[currentIndex][0][i].state == 1)
+        ) {
+          listedShiftHour.innerHTML = data[currentIndex][0][i].time + "h";
           listedShiftStart.innerHTML = data[currentIndex][0][i].start;
           listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
 
@@ -1380,11 +1396,27 @@ function updateListedShifts() {
           } else {
             fill_before.style.width = "calc(" + fill_before_width + "% + 40px)";
           }
-
           if (fill_after_width == 0) {
             fill_after.style.width = "0%";
           } else {
             fill_after.style.width = "calc(" + fill_after_width + "% + 40px)";
+          }
+
+          if (data[currentIndex][0][i].state == 1) {
+            listedShiftDiv.style.backgroundColor = "var(--red)";
+            listedShiftHour.innerHTML = "";
+            listedShiftStart.innerHTML = "";
+            listedShiftEnd.innerHTML = "Sick";
+            listedShiftDiv.addEventListener("mouseover", function () {
+              listedShiftHour.innerHTML = data[currentIndex][0][i].time + "h";
+              listedShiftStart.innerHTML = data[currentIndex][0][i].start;
+              listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
+            });
+            listedShiftDiv.addEventListener("mouseout", function () {
+              listedShiftHour.innerHTML = "";
+              listedShiftStart.innerHTML = "";
+              listedShiftEnd.innerHTML = "Sick";
+            });
           }
         } else if (
           data[currentIndex][0][i] &&
@@ -1398,17 +1430,6 @@ function updateListedShifts() {
           listedShiftHour.innerHTML =
             "Helligdag, " + data[currentIndex][0][i].time;
           listedShiftDiv.style.backgroundColor = "var(--background)";
-        } else if (
-          data[currentIndex][0][i] &&
-          data[currentIndex][0][i].state == 1
-        ) {
-          shiftList.appendChild(listedShiftLi);
-          listedShiftLi.appendChild(listedShiftDay);
-          listedShiftLi.appendChild(listedShiftTimes);
-          listedShiftTimes.appendChild(listedShiftDiv);
-          listedShiftDiv.appendChild(listedShiftHour);
-          listedShiftHour.innerHTML = "Sick";
-          listedShiftDiv.style.backgroundColor = "var(--red)";
         } else {
           shiftList.appendChild(listedShiftLi);
           listedShiftLi.appendChild(listedShiftDay);
@@ -1422,7 +1443,8 @@ function updateListedShifts() {
 }
 
 function editShift(event) {
-  if (editActive === true) {
+  console.log(event.target.classList);
+  if (event.target.classList == "on" && editActive === true) {
     let editData1 = document.getElementById("shiftDetailStart");
     let editData2 = document.getElementById("shiftDetailEnd");
     let editData3 = document.getElementById("shiftDetailTime");
@@ -1458,6 +1480,8 @@ function editShift(event) {
           console.error("Error fetching data:", error);
         });
     }
+  } else {
+    console.log("no");
   }
 }
 
@@ -1472,18 +1496,14 @@ function sickShift(event) {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          let Start = data[currentIndex][0][number].start;
-          let End = data[currentIndex][0][number].end;
-          let Evening = data[currentIndex][0][number].evening;
-
           let content = {
-            start: Start,
-            end: End,
-            time: 0,
+            start: data[currentIndex][0][number].start,
+            end: data[currentIndex][0][number].end,
+            time: data[currentIndex][0][number].time,
             lunch: 0,
-            evening: Evening,
-            saturday: 0,
-            sunday: 0,
+            evening: data[currentIndex][0][number].evening,
+            saturday: data[currentIndex][0][number].saturday,
+            sunday: data[currentIndex][0][number].sunday,
             state: 1,
             currentIndex: currentIndex,
           };
