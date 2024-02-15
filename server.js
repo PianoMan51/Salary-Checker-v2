@@ -38,7 +38,7 @@ app.get("/home.css", (req, res) => {
 app.post("/data", (req, res) => {
   const { tdId, content, currentIndex } = req.body;
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
 
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
@@ -69,7 +69,7 @@ app.post("/data", (req, res) => {
 
 app.get("/data", (req, res) => {
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
 
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
@@ -88,7 +88,7 @@ app.get("/data", (req, res) => {
 
 app.put("/data/:currentIndex/:number", (req, res) => {
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
 
   let { number } = req.params;
   let {
@@ -149,7 +149,7 @@ app.put("/data/:currentIndex/:number", (req, res) => {
 app.post("/weekNo", (req, res) => {
   const { content, currentIndex } = req.body;
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
@@ -179,7 +179,7 @@ app.post("/weekNo", (req, res) => {
 
 app.get("/weekNo", (req, res) => {
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
@@ -194,7 +194,7 @@ app.get("/weekNo", (req, res) => {
 
 app.get("/paysheetRates", (req, res) => {
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
@@ -209,7 +209,7 @@ app.get("/paysheetRates", (req, res) => {
 app.post("/paysheetRates", (req, res) => {
   const { content, currentIndex } = req.body;
   const currentYear = req.query.currentYear;
-  let shiftTimesFilename = currentYear + "_shiftTimes.json";
+  let shiftTimesFilename = "data/" + currentYear + "_shiftTimes.json";
   fs.readFile(shiftTimesFilename, "utf8", (err, data) => {
     if (err) {
       console.error(err);
@@ -237,8 +237,31 @@ app.post("/paysheetRates", (req, res) => {
   });
 });
 
-// Start the server
+app.get("/fileCount", (req, res) => {
+  fs.readdir("./data", (err, files) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Internal server error");
+      return;
+    }
+    res.json({ count: files.length });
+  });
+});
+app.post("/createFile", (req, res) => {
+  const count = req.body.yearCounter;
+  let filePath = path.join("./data", `${count}_shiftTimes.json`);
+  fs.writeFile(filePath, "{}", (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Failed to create file");
+      return;
+    }
+    console.log("File created successfully");
+    res.status(200).send("File created successfully");
+  });
+});
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

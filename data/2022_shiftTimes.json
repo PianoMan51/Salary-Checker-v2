@@ -815,17 +815,17 @@
             "askat_sats": "-0.38",
             "opsparet_fritvalgsaftale_sats": "0.07",
             "personbidrag_sats": "0.077",
-            "personalerabat_beløb": "0.00",
+            "personalerabat_beløb": "150.39",
             "udbetalingFritvalgs_beløb": "0.00",
             "udbetalingFeriepenge_beløb": "0.00",
-            "udbetaling_beløb": "150.39",
-            "arbejdsmarkedsbidrag_grundlag": "0.00",
-            "ATP_beløb": "0.00",
-            "PFA_beløb": "0.00",
-            "arbejdsmarkedsbidrag_beløb": "0.00",
-            "askat_beløb": "0.00",
-            "opsparet_fritvalgsaftale_beløb": "0.00",
-            "opsparet_feriepenge_beløb": "0.00"
+            "udbetaling_beløb": "5373.05",
+            "arbejdsmarkedsbidrag_grundlag": "9454.86",
+            "ATP_beløb": "-31.55",
+            "PFA_beløb": "-451.27",
+            "arbejdsmarkedsbidrag_beløb": "-756.39",
+            "askat_beløb": "-3305.42",
+            "opsparet_fritvalgsaftale_beløb": "695.64",
+            "opsparet_feriepenge_beløb": "1242.21"
         }
     ],
     [

@@ -22,6 +22,7 @@ let paysheet = document.getElementById("paysheet");
 let preview = document.getElementById("preview");
 let shiftList = document.getElementById("shiftListContainer");
 let shiftDetails = document.getElementById("shiftDetails");
+let year_panel = document.getElementById("year_panel");
 let yearButtons = document.querySelectorAll(".year");
 let deleteActive = false;
 let editActive = false;
@@ -140,6 +141,26 @@ editButton.addEventListener("click", () => {
   }
   loadCell();
 });
+document.getElementById("add_newYear").addEventListener("click", addNewYear);
+
+function addNewYear() {
+  fetch("/fileCount")
+    .then((response) => response.json())
+    .then((data) => {
+      let year = document.createElement("BUTTON");
+      let yearCounter = data.count + 2017;
+      year.setAttribute("class", "year");
+      year.innerHTML = yearCounter;
+      changeYear.appendChild(year);
+      fetch("/createFile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ yearCounter }),
+      });
+    });
+}
 
 yearButtons.forEach((year) => {
   year.addEventListener("click", function () {
@@ -158,7 +179,6 @@ yearButtons.forEach((year) => {
     updatePaysheet();
     updateMonthChart();
     updateYearChart();
-    updateTotalChart();
     updateListedShifts();
   });
 });
@@ -354,14 +374,11 @@ async function loadCell() {
     }
 
     //year-basis
-    //all years
     let monthTotal = 0;
-    let yearTotal = 0;
     let yearChartData = [];
     let yearChartSalary = [];
     for (let i = 0; i < data.length; i++) {
       monthTotal = 0;
-      yearTotal = 0;
       for (let j = 0; j < monthData.length; j++) {
         if (data[i][0][j]) {
           monthTotal += data[i][0][j].time;
@@ -375,6 +392,25 @@ async function loadCell() {
     shiftCount.innerHTML = shiftCounter;
     updateMonthChart(monthChartData);
     updateYearChart(yearChartData, yearChartSalary);
+
+    let overallChartData = [];
+
+    for (let year = 2017; year < 2025; year++) {
+      fetch(`/data?currentYear=${year}`)
+        .then((response) => response.json())
+        .then((data) => {
+          let yearTotal = 0;
+          for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < monthData.length; j++) {
+              if (data[i][0][j]) {
+                yearTotal += data[i][0][j].time;
+              }
+            }
+          }
+          overallChartData.push(yearTotal);
+          updateTotalChart(overallChartData);
+        });
+    }
 
     for (let i = 0; i < monthData.length; i++) {
       let tdId = "tdp" + i;
@@ -1038,7 +1074,7 @@ function updatePaysheet() {
       let perk_preview = document.getElementById("perk_preview");
       perk_preview.innerHTML = "$ " + personalerabat_beløb.value;
 
-      value5.innerHTML = "$ " + udbetaling_beløb.value;
+      value5.innerHTML = udbetaling_beløb.value + " $";
     })
     .catch((error) => {
       console.error("Error fetching data from server:", error);
@@ -1226,7 +1262,7 @@ let yearChart = new Chart("progress_year", {
         type: "linear",
         display: true,
         min: 0,
-        max: 100,
+        max: 120,
         position: "left",
         grid: {
           display: false,
@@ -1236,8 +1272,7 @@ let yearChart = new Chart("progress_year", {
         type: "linear",
         display: true,
         min: 0,
-        max: 10000,
-        min: 0,
+        max: 12000,
         position: "right",
         grid: {
           display: false,
@@ -1263,7 +1298,7 @@ yearChart.update();
 let totalChart = new Chart("progress_total", {
   type: "bar",
   data: {
-    labels: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
+    labels: ["2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
     datasets: [
       {
         data: [],
@@ -1401,7 +1436,6 @@ function updateListedShifts() {
           } else {
             fill_after.style.width = "calc(" + fill_after_width + "% + 40px)";
           }
-
           if (data[currentIndex][0][i].state == 1) {
             listedShiftDiv.style.backgroundColor = "var(--red)";
             listedShiftHour.innerHTML = "";
@@ -1424,9 +1458,11 @@ function updateListedShifts() {
         ) {
           shiftList.appendChild(listedShiftLi);
           listedShiftLi.appendChild(listedShiftDay);
+          listedShiftTimes.append(fill_before);
           listedShiftLi.appendChild(listedShiftTimes);
           listedShiftTimes.appendChild(listedShiftDiv);
           listedShiftDiv.appendChild(listedShiftHour);
+          listedShiftTimes.append(fill_after);
           listedShiftHour.innerHTML =
             "Helligdag, " + data[currentIndex][0][i].time;
           listedShiftDiv.style.backgroundColor = "var(--background)";
@@ -1438,6 +1474,11 @@ function updateListedShifts() {
           fill_before.style.width = "100%";
         }
         listedShiftDay.innerHTML = day;
+        if (day == "SUN" && i !== data[currentIndex][0].length - 1) {
+          let divider = document.createElement("DIV");
+          divider.setAttribute("class", "divider");
+          shiftList.appendChild(divider);
+        }
       }
     });
 }

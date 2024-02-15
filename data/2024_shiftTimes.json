@@ -268,13 +268,13 @@
                 "state": 0
             },
             {
-                "start": "16:00",
-                "end": "21:15",
-                "time": 4.75,
-                "lunch": 0.5,
-                "evening": 2.75,
-                "saturday": 0,
-                "sunday": 0,
+                "start": "",
+                "end": "",
+                "time": null,
+                "lunch": null,
+                "evening": null,
+                "saturday": null,
+                "sunday": null,
                 "state": 0
             },
             null,

@@ -217,7 +217,7 @@ body {
 #listedShiftDay {
   width: 40px;
   padding: 14px 20px;
-  background-color: var(--blue);
+  background-color: var(--darkblue);
   color: white;
   border-radius: 10px;
   text-align: center;
@@ -245,6 +245,14 @@ body {
   padding: 14px 20px;
   border-radius: 10px;
   width: 0%;
+}
+
+.divider {
+  height: 8px;
+  width: 100%;
+  background-color: var(--darkgray);
+  border-radius: 4px;
+  margin: 20px 0px;
 }
 
 #preview_calendarContainer {
@@ -794,9 +802,20 @@ body {
   justify-content: center;
   width: 800px;
   gap: 10px;
+
 }
 
-#changeYear button {
+#changeYear::-webkit-scrollbar {
+  display: none;
+}
+
+#year_panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.year {
   border: none;
   height: 40px;
   width: 90px;
@@ -809,15 +828,32 @@ body {
   transition: all ease-in-out 0.3s;
 }
 
-#changeYear button:hover {
+.year:hover {
   transform: scale(1.1);
   transition: all ease-in-out 0.3s;
   background-color: var(--darkestgray);
 }
 
-#changeYear button.active {
+.year.active {
   transform: scale(1.15);
   background-color: var(--darkestgray);
+}
+
+#add_newYear {
+  height: 40px;
+  width: 40px;
+  margin-left: 10px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--darkbackground);
+  color: white;
+  transform: scale(1);
+  transition: all ease-in-out 0.2s;
+  cursor: pointer;
+}
+
+#add_newYear:hover {
+  transform: scale(1.15);
 }
 
 .calendar_button_set {
