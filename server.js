@@ -5,6 +5,9 @@ let path = require("path");
 let app = express();
 let port = 8080;
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.json({ limit: "10mb" }));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -249,14 +252,14 @@ app.get("/fileCount", (req, res) => {
 });
 app.post("/createFile", (req, res) => {
   const count = req.body.yearCounter;
+  const data_structure = req.body.data_structure;
   let filePath = path.join("./data", `${count}_shiftTimes.json`);
-  fs.writeFile(filePath, "{}", (err) => {
+
+  fs.writeFile(filePath, JSON.stringify(data_structure), (err) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Failed to create file");
-      return;
+      return res.status(500).send("Failed to create file");
     }
-    console.log("File created successfully");
     res.status(200).send("File created successfully");
   });
 });

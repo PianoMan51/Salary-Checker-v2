@@ -141,7 +141,56 @@ editButton.addEventListener("click", () => {
   }
   loadCell();
 });
+
 document.getElementById("add_newYear").addEventListener("click", addNewYear);
+
+function createDataStructure() {
+  let data_structure = [];
+  for (let i = 0; i < 12; i++) {
+    let month = [];
+    let shiftTimes = [];
+    for (let j = 0; j < 42; j++) {
+      shiftTimes.push(null);
+    }
+    let weeks = {
+      week1: 0,
+      week2: 0,
+      week3: 0,
+      week4: 0,
+      week5: 0,
+      week6: 0,
+    };
+    let rates = {
+      timeløn_sats: 0,
+      forskudttimer_aften_sats: 0,
+      forskudttimer_lørdag_sats: 0,
+      forskudttimer_søndag_sats: 0,
+      PFA_sats: 0,
+      arbejdsmarkedsbidrag_sats: 0,
+      askat_sats: 0,
+      opsparet_fritvalgsaftale_sats: 0,
+      personbidrag_sats: 0,
+      personalerabat_beløb: 0,
+      udbetalingFritvalgs_beløb: 0,
+      udbetalingFeriepenge_beløb: 0,
+      udbetaling_beløb: 0,
+      arbejdsmarkedsbidrag_grundlag: 0,
+      ATP_beløb: 0,
+      PFA_beløb: 0,
+      arbejdsmarkedsbidrag_beløb: 0,
+      askat_beløb: 0,
+      opsparet_fritvalgsaftale_beløb: 0,
+      opsparet_feriepenge_beløb: 0,
+    };
+    month.push(shiftTimes);
+    month.push(weeks);
+    month.push(rates);
+
+    data_structure.push(month);
+  }
+
+  return data_structure;
+}
 
 function addNewYear() {
   fetch("/fileCount")
@@ -149,39 +198,45 @@ function addNewYear() {
     .then((data) => {
       let year = document.createElement("BUTTON");
       let yearCounter = data.count + 2017;
+      let data_structure = createDataStructure();
       year.setAttribute("class", "year");
+      year.setAttribute("id", "year" + yearCounter);
       year.innerHTML = yearCounter;
+      year.style = "background-color: var(--gray);";
       changeYear.appendChild(year);
       fetch("/createFile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ yearCounter }),
+        body: JSON.stringify({ yearCounter, data_structure }),
       });
     });
 }
 
-yearButtons.forEach((year) => {
-  year.addEventListener("click", function () {
-    currentYear = year.innerHTML;
-    localStorage.setItem("currentYear", currentYear);
+document
+  .getElementById("changeYear")
+  .addEventListener("click", function (event) {
+    if (event.target.classList.contains("year")) {
+      let clickedYear = event.target;
+      currentYear = clickedYear.innerHTML;
+      localStorage.setItem("currentYear", currentYear);
 
-    yearButtons.forEach((otherYear) => {
-      otherYear.style.backgroundColor = "var(--gray)";
-      otherYear.classList.remove("active");
-    });
+      yearButtons.forEach((otherYear) => {
+        otherYear.style.backgroundColor = "var(--gray)";
+        otherYear.classList.remove("active");
+      });
 
-    year.style.backgroundColor = "var(--darkergray)";
-    year.classList.add("active");
+      clickedYear.style.backgroundColor = "var(--darkergray)";
+      clickedYear.classList.add("active");
 
-    loadCell();
-    updatePaysheet();
-    updateMonthChart();
-    updateYearChart();
-    updateListedShifts();
+      loadCell();
+      updatePaysheet();
+      updateMonthChart();
+      updateYearChart();
+      updateListedShifts();
+    }
   });
-});
 
 document.querySelectorAll(".calendar_button").forEach((calendarButton) => {
   calendarButton.addEventListener("click", function () {
@@ -1019,7 +1074,12 @@ function updatePaysheet() {
         +askat_grundlag.innerHTML * +askat_sats.value
       ).toFixed(2);
 
-      let personaleforeningbeløb = -20;
+      let personaleforeningbeløb;
+      if (normalTime > 0) {
+        personaleforeningbeløb = 0;
+      } else {
+        personaleforeningbeløb = -20;
+      }
       let amount10valueLOW = 0;
       if (normalTime > 0) {
         personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
