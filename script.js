@@ -11,6 +11,7 @@ let holyButton = document.getElementById("calendar_holy");
 let editShiftSection = document.getElementById("editShift");
 let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
+let currentMonthSpan = document.getElementById("currentMonth");
 let currentYear = localStorage.getItem("currentYear") || 2024;
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
@@ -372,12 +373,13 @@ let week5 = document.getElementById("week5");
 let week6 = document.getElementById("week6");
 
 async function loadCell() {
+  let tdElements = document.querySelectorAll("#calendar td");
   try {
     const data_response = await fetch(`/data?currentYear=${currentYear}`);
     const data = await data_response.json();
 
     let monthData = data[currentIndex][0];
-    let tdElements = document.querySelectorAll("#calendar td");
+
     let previewElements = document.querySelectorAll("#preview_calendar td");
     let shiftCount = document.getElementById("shiftCount");
     Array.from(tdElements).forEach((td) => {
@@ -476,7 +478,13 @@ async function loadCell() {
       }
     }
   } catch (error) {
-    console.error("Error:", error);
+    let tdElements = document.querySelectorAll("#calendar td");
+    tdElements.forEach((td) => {
+      td.style.backgroundColor = "var(--lightgray)";
+      td.style.color = "var(--background)";
+      td.style.fontStyle = "italic";
+      td.innerHTML = "missing data";
+    });
   }
 
   try {
@@ -491,7 +499,7 @@ async function loadCell() {
     week5.value = weekNumbers.week5;
     week6.value = weekNumbers.week6;
   } catch (error) {
-    console.error("Error:", error);
+    console.log("loadCell NO");
   }
 
   updatePaysheet();
@@ -783,13 +791,13 @@ function changeMonth(direction) {
     otherYear.style.backgroundColor = "var(--gray)";
     otherYear.classList.remove("active");
   });
-  currentYearBtn.style.backgroundColor = "var(--darkergray)";
+  if (currentYearBtn) {
+    currentYearBtn.style.backgroundColor = "var(--darkergray)";
+  }
 
   localStorage.setItem("currentIndex", currentIndex);
   localStorage.setItem("currentYear", currentYear);
   currentMonthSpan.innerHTML = monthNames[currentIndex];
-  let money_preview_month = document.getElementById("money_preview_month");
-  money_preview_month.innerHTML = "Month of " + currentMonthSpan.innerHTML;
   loadCell(currentIndex);
   updatePaysheet();
   updateListedShifts();
@@ -803,342 +811,351 @@ nextBtn.addEventListener("click", function () {
   changeMonth("next");
 });
 
-function updatePaysheet() {
+let money_preview_month = document.getElementById("money_preview_month");
+let perk_preview_month = document.getElementById("perk_preview_month");
+let perk_preview = document.getElementById("perk_preview");
+let money_preview = document.getElementById("money_preview");
+
+async function updatePaysheet() {
   let timeløn_antal = document.getElementById("timeløn_antal");
   let timeløn_sats = document.getElementById("timeløn_sats");
   let timeløn_beløb = document.getElementById("timeløn_beløb");
 
-  let forskudttimer_aften_antal = document.getElementById(
-    "forskudttimer_aften_antal"
-  );
-  let forskudttimer_aften_sats = document.getElementById(
-    "forskudttimer_aften_sats"
-  );
-  let forskudttimer_aften_beløb = document.getElementById(
-    "forskudttimer_aften_beløb"
-  );
+  try {
+    let forskudttimer_aften_antal = document.getElementById(
+      "forskudttimer_aften_antal"
+    );
+    let forskudttimer_aften_sats = document.getElementById(
+      "forskudttimer_aften_sats"
+    );
+    let forskudttimer_aften_beløb = document.getElementById(
+      "forskudttimer_aften_beløb"
+    );
 
-  let forskudttimer_lørdag_antal = document.getElementById(
-    "forskudttimer_lørdag_antal"
-  );
-  let forskudttimer_lørdag_sats = document.getElementById(
-    "forskudttimer_lørdag_sats"
-  );
-  let forskudttimer_lørdag_beløb = document.getElementById(
-    "forskudttimer_lørdag_beløb"
-  );
+    let forskudttimer_lørdag_antal = document.getElementById(
+      "forskudttimer_lørdag_antal"
+    );
+    let forskudttimer_lørdag_sats = document.getElementById(
+      "forskudttimer_lørdag_sats"
+    );
+    let forskudttimer_lørdag_beløb = document.getElementById(
+      "forskudttimer_lørdag_beløb"
+    );
 
-  let forskudttimer_søndag_antal = document.getElementById(
-    "forskudttimer_søndag_antal"
-  );
-  let forskudttimer_søndag_sats = document.getElementById(
-    "forskudttimer_søndag_sats"
-  );
-  let forskudttimer_søndag_beløb = document.getElementById(
-    "forskudttimer_søndag_beløb"
-  );
+    let forskudttimer_søndag_antal = document.getElementById(
+      "forskudttimer_søndag_antal"
+    );
+    let forskudttimer_søndag_sats = document.getElementById(
+      "forskudttimer_søndag_sats"
+    );
+    let forskudttimer_søndag_beløb = document.getElementById(
+      "forskudttimer_søndag_beløb"
+    );
 
-  let udbetalingFritvalgs_beløb = document.getElementById(
-    "udbetalingFritvalgs_beløb"
-  );
+    let udbetalingFritvalgs_beløb = document.getElementById(
+      "udbetalingFritvalgs_beløb"
+    );
 
-  let sygdom_antal = document.getElementById("sygdom_antal");
-  let sygdom_sats = document.getElementById("sygdom_sats");
-  let sygdom_beløb = document.getElementById("sygdom_beløb");
+    let sygdom_antal = document.getElementById("sygdom_antal");
+    let sygdom_sats = document.getElementById("sygdom_sats");
+    let sygdom_beløb = document.getElementById("sygdom_beløb");
 
-  let udbetalingFeriepenge_beløb = document.getElementById(
-    "udbetalingFeriepenge_beløb"
-  );
+    let udbetalingFeriepenge_beløb = document.getElementById(
+      "udbetalingFeriepenge_beløb"
+    );
 
-  let PFA_grundlag = document.getElementById("PFA_grundlag");
-  let PFA_beløb = document.getElementById("PFA_beløb");
-  let PFA_sats = document.getElementById("PFA_sats");
+    let PFA_grundlag = document.getElementById("PFA_grundlag");
+    let PFA_beløb = document.getElementById("PFA_beløb");
+    let PFA_sats = document.getElementById("PFA_sats");
 
-  let ATP_beløb = document.getElementById("ATP_beløb");
+    let ATP_beløb = document.getElementById("ATP_beløb");
 
-  let arbejdsmarkedsbidrag_grundlag = document.getElementById(
-    "arbejdsmarkedsbidrag_grundlag"
-  );
-  let arbejdsmarkedsbidrag_sats = document.getElementById(
-    "arbejdsmarkedsbidrag_sats"
-  );
-  let arbejdsmarkedsbidrag_beløb = document.getElementById(
-    "arbejdsmarkedsbidrag_beløb"
-  );
+    let arbejdsmarkedsbidrag_grundlag = document.getElementById(
+      "arbejdsmarkedsbidrag_grundlag"
+    );
+    let arbejdsmarkedsbidrag_sats = document.getElementById(
+      "arbejdsmarkedsbidrag_sats"
+    );
+    let arbejdsmarkedsbidrag_beløb = document.getElementById(
+      "arbejdsmarkedsbidrag_beløb"
+    );
 
-  let askat_grundlag = document.getElementById("askat_grundlag");
-  let askat_sats = document.getElementById("askat_sats");
-  let askat_beløb = document.getElementById("askat_beløb");
+    let askat_grundlag = document.getElementById("askat_grundlag");
+    let askat_sats = document.getElementById("askat_sats");
+    let askat_beløb = document.getElementById("askat_beløb");
 
-  let personalerabat_beløb = document.getElementById("personalerabat_beløb");
+    let personalerabat_beløb = document.getElementById("personalerabat_beløb");
 
-  let personaleforening_beløb = document.getElementById(
-    "personaleforening_beløb"
-  );
+    let personaleforening_beløb = document.getElementById(
+      "personaleforening_beløb"
+    );
 
-  let opsparet_fritvalgsaftale_grundlag = document.getElementById(
-    "opsparet_fritvalgsaftale_grundlag"
-  );
-  let opsparet_fritvalgsaftale_sats = document.getElementById(
-    "opsparet_fritvalgsaftale_sats"
-  );
-  let opsparet_fritvalgsaftale_beløb = document.getElementById(
-    "opsparet_fritvalgsaftale_beløb"
-  );
+    let opsparet_fritvalgsaftale_grundlag = document.getElementById(
+      "opsparet_fritvalgsaftale_grundlag"
+    );
+    let opsparet_fritvalgsaftale_sats = document.getElementById(
+      "opsparet_fritvalgsaftale_sats"
+    );
+    let opsparet_fritvalgsaftale_beløb = document.getElementById(
+      "opsparet_fritvalgsaftale_beløb"
+    );
 
-  let opsparet_feriepenge_beløb = document.getElementById(
-    "opsparet_feriepenge_beløb"
-  );
+    let opsparet_feriepenge_beløb = document.getElementById(
+      "opsparet_feriepenge_beløb"
+    );
 
-  let personbidrag = document.getElementById("personbidrag");
-  let personbidrag_sats = document.getElementById("personbidrag_sats");
-  let personbidrag_beløb = document.getElementById("personbidrag_beløb");
+    let personbidrag = document.getElementById("personbidrag");
+    let personbidrag_sats = document.getElementById("personbidrag_sats");
+    let personbidrag_beløb = document.getElementById("personbidrag_beløb");
 
-  let udbetaling_beløb = document.getElementById("udbetaling_beløb");
+    let udbetaling_beløb = document.getElementById("udbetaling_beløb");
 
-  timeløn_antal.innerHTML = 0;
+    timeløn_antal.innerHTML = 0;
 
-  fetch(`/paysheetRates?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      timeløn_sats.value = data[currentIndex][2].timeløn_sats;
-      forskudttimer_aften_sats.value =
-        data[currentIndex][2].forskudttimer_aften_sats;
-      forskudttimer_lørdag_sats.value =
-        data[currentIndex][2].forskudttimer_lørdag_sats;
-      forskudttimer_søndag_sats.value =
-        data[currentIndex][2].forskudttimer_søndag_sats;
-      sygdom_sats.value = data[currentIndex][2].timeløn_sats;
-      PFA_sats.value = data[currentIndex][2].PFA_sats;
-      udbetalingFritvalgs_beløb.value =
-        data[currentIndex][2].udbetalingFritvalgs_beløb;
-      udbetalingFeriepenge_beløb.value =
-        data[currentIndex][2].udbetalingFeriepenge_beløb;
-      arbejdsmarkedsbidrag_sats.value =
-        data[currentIndex][2].arbejdsmarkedsbidrag_sats;
-      askat_sats.value = data[currentIndex][2].askat_sats;
-      personalerabat_beløb.value = data[currentIndex][2].personalerabat_beløb;
-      opsparet_fritvalgsaftale_sats.value =
-        data[currentIndex][2].opsparet_fritvalgsaftale_sats;
-      personbidrag_sats.value = data[currentIndex][2].personbidrag_sats;
-      let accumulatedFritvalgskonto =
-        +data[0][2].opsparet_fritvalgsaftale_beløb;
-      let accumulatedFeriepenge = +data[0][2].opsparet_feriepenge_beløb;
-      let accumulatedUdbetalt = +data[0][2].udbetaling_beløb;
+    let paysheetRatesResponse = await fetch(
+      `/paysheetRates?currentYear=${currentYear}`
+    );
+    let paysheetRatesData = await paysheetRatesResponse.json();
 
-      let accumFritvalgsSpan = document.getElementById("accumulatedFritvalgs");
-      let accumFeriepengeSpan = document.getElementById(
-        "accumulatedFeriepenge"
-      );
-      let accumUdbetaltSpan = document.getElementById("accumulatedUdbetaling");
+    timeløn_sats.value = paysheetRatesData[currentIndex][2].timeløn_sats;
+    forskudttimer_aften_sats.value =
+      paysheetRatesData[currentIndex][2].forskudttimer_aften_sats;
+    forskudttimer_lørdag_sats.value =
+      paysheetRatesData[currentIndex][2].forskudttimer_lørdag_sats;
+    forskudttimer_søndag_sats.value =
+      paysheetRatesData[currentIndex][2].forskudttimer_søndag_sats;
+    sygdom_sats.value = paysheetRatesData[currentIndex][2].timeløn_sats;
+    PFA_sats.value = paysheetRatesData[currentIndex][2].PFA_sats;
+    udbetalingFritvalgs_beløb.value =
+      paysheetRatesData[currentIndex][2].udbetalingFritvalgs_beløb;
+    udbetalingFeriepenge_beløb.value =
+      paysheetRatesData[currentIndex][2].udbetalingFeriepenge_beløb;
+    arbejdsmarkedsbidrag_sats.value =
+      paysheetRatesData[currentIndex][2].arbejdsmarkedsbidrag_sats;
+    askat_sats.value = paysheetRatesData[currentIndex][2].askat_sats;
+    personalerabat_beløb.value =
+      paysheetRatesData[currentIndex][2].personalerabat_beløb;
+    opsparet_fritvalgsaftale_sats.value =
+      paysheetRatesData[currentIndex][2].opsparet_fritvalgsaftale_sats;
+    personbidrag_sats.value =
+      paysheetRatesData[currentIndex][2].personbidrag_sats;
+    let accumulatedFritvalgskonto =
+      +paysheetRatesData[0][2].opsparet_fritvalgsaftale_beløb;
+    let accumulatedFeriepenge =
+      +paysheetRatesData[0][2].opsparet_feriepenge_beløb;
+    let accumulatedUdbetalt = +paysheetRatesData[0][2].udbetaling_beløb;
 
-      for (let i = 0; i < currentIndex; i++) {
-        accumulatedFritvalgskonto += +data[i][2].opsparet_fritvalgsaftale_beløb;
-        accumulatedFeriepenge += +data[i][2].opsparet_feriepenge_beløb;
-        accumulatedUdbetalt += +data[i][2].udbetaling_beløb;
-      }
+    let accumFritvalgsSpan = document.getElementById("accumulatedFritvalgs");
+    let accumFeriepengeSpan = document.getElementById("accumulatedFeriepenge");
+    let accumUdbetaltSpan = document.getElementById("accumulatedUdbetaling");
+
+    for (let i = 0; i < currentIndex; i++) {
+      accumulatedFritvalgskonto +=
+        +paysheetRatesData[i][2].opsparet_fritvalgsaftale_beløb;
+      accumulatedFeriepenge +=
+        +paysheetRatesData[i][2].opsparet_feriepenge_beløb;
+      accumulatedUdbetalt += +paysheetRatesData[i][2].udbetaling_beløb;
+    }
+    accumFritvalgsSpan.innerHTML = "$ " + accumulatedFritvalgskonto.toFixed(2);
+    accumFeriepengeSpan.innerHTML = "$ " + accumulatedFeriepenge.toFixed(2);
+    accumUdbetaltSpan.innerHTML = "$ " + accumulatedUdbetalt.toFixed(2);
+
+    accumFritvalgsSpan.addEventListener("mouseout", function () {
+      accumFritvalgsSpan.innerHTML = "$" + accumulatedFritvalgskonto.toFixed(2);
+    });
+    accumFritvalgsSpan.addEventListener("mouseover", function () {
       accumFritvalgsSpan.innerHTML =
-        "$ " + accumulatedFritvalgskonto.toFixed(2);
-      accumFeriepengeSpan.innerHTML = "$ " + accumulatedFeriepenge.toFixed(2);
-      accumUdbetaltSpan.innerHTML = "$ " + accumulatedUdbetalt.toFixed(2);
-
-      accumFritvalgsSpan.addEventListener("mouseout", function () {
-        accumFritvalgsSpan.innerHTML =
-          "$" + accumulatedFritvalgskonto.toFixed(2);
-      });
-      accumFritvalgsSpan.addEventListener("mouseover", function () {
-        accumFritvalgsSpan.innerHTML =
-          "$" + (accumulatedFritvalgskonto * 0.82 * 0.62).toFixed(2);
-      });
-      accumFeriepengeSpan.addEventListener("mouseout", function () {
-        accumFeriepengeSpan.innerHTML = "$" + accumulatedFeriepenge.toFixed(2);
-      });
-      accumFeriepengeSpan.addEventListener("mouseover", function () {
-        accumFeriepengeSpan.innerHTML =
-          "$" + (accumulatedFeriepenge * 0.82 * 0.62).toFixed(2);
-      });
+        "$" + (accumulatedFritvalgskonto * 0.82 * 0.62).toFixed(2);
+    });
+    accumFeriepengeSpan.addEventListener("mouseout", function () {
+      accumFeriepengeSpan.innerHTML = "$" + accumulatedFeriepenge.toFixed(2);
+    });
+    accumFeriepengeSpan.addEventListener("mouseover", function () {
+      accumFeriepengeSpan.innerHTML =
+        "$" + (accumulatedFeriepenge * 0.82 * 0.62).toFixed(2);
     });
 
-  fetch(`/data?currentYear=${currentYear}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let circleData1 = document.querySelector("#normalTime");
-      let circleData2 = document.querySelector("#eveningTime");
-      let circleData3 = document.querySelector("#saturdayTime");
-      let circleData4 = document.querySelector("#sundayTime");
-      let normalTime = 0;
-      let eveningTime = 0;
-      let saturdayTime = 0;
-      let sundayTime = 0;
-      let sickTime = 0;
-      for (let i = 0; i < data[currentIndex][0].length; i++) {
-        if (data[currentIndex][0][i] !== null) {
-          if (
-            data[currentIndex][0][i].state == 0 ||
-            data[currentIndex][0][i].state == 2
-          ) {
-            normalTime += data[currentIndex][0][i].time;
-          }
-          if (data[currentIndex][0][i].state == 1) {
-            sickTime += data[currentIndex][0][i].time;
-          }
+    let dataResponse = await fetch(`/data?currentYear=${currentYear}`);
+    let data = await dataResponse.json();
 
-          eveningTime += data[currentIndex][0][i].evening;
-          saturdayTime += data[currentIndex][0][i].saturday;
-          sundayTime += data[currentIndex][0][i].sunday;
+    let circleData1 = document.querySelector("#normalTime");
+    let circleData2 = document.querySelector("#eveningTime");
+    let circleData3 = document.querySelector("#saturdayTime");
+    let circleData4 = document.querySelector("#sundayTime");
+    let normalTime = 0;
+    let eveningTime = 0;
+    let saturdayTime = 0;
+    let sundayTime = 0;
+    let sickTime = 0;
+    for (let i = 0; i < data[currentIndex][0].length; i++) {
+      if (data[currentIndex][0][i] !== null) {
+        if (
+          data[currentIndex][0][i].state == 0 ||
+          data[currentIndex][0][i].state == 2
+        ) {
+          normalTime += data[currentIndex][0][i].time;
+        }
+        if (data[currentIndex][0][i].state == 1) {
+          sickTime += data[currentIndex][0][i].time;
         }
 
-        value1.innerHTML = (+normalTime + +sickTime).toFixed(2) + " h";
-        value2.innerHTML = eveningTime.toFixed(2) + " h";
-        value3.innerHTML = saturdayTime.toFixed(2) + " h";
-        value4.innerHTML = sundayTime.toFixed(2) + " h";
-        circleData1.innerHTML = normalTime.toFixed(2);
-        circleData2.innerHTML = eveningTime.toFixed(2);
-        circleData3.innerHTML = saturdayTime.toFixed(2);
-        circleData4.innerHTML = sundayTime.toFixed(2);
+        eveningTime += data[currentIndex][0][i].evening;
+        saturdayTime += data[currentIndex][0][i].saturday;
+        sundayTime += data[currentIndex][0][i].sunday;
       }
 
-      let donutData = [normalTime, eveningTime, saturdayTime, sundayTime];
-      donutChart.data.datasets[0].data = donutData;
-      donutChart.update();
+      value1.innerHTML = (+normalTime + +sickTime).toFixed(2) + " h";
+      value2.innerHTML = eveningTime.toFixed(2) + " h";
+      value3.innerHTML = saturdayTime.toFixed(2) + " h";
+      value4.innerHTML = sundayTime.toFixed(2) + " h";
+      circleData1.innerHTML = normalTime.toFixed(2);
+      circleData2.innerHTML = eveningTime.toFixed(2);
+      circleData3.innerHTML = saturdayTime.toFixed(2);
+      circleData4.innerHTML = sundayTime.toFixed(2);
+    }
 
-      timeløn_antal.innerHTML = normalTime;
-      timeløn_beløb.value = (normalTime * timeløn_sats.value).toFixed(2);
+    let donutData = [normalTime, eveningTime, saturdayTime, sundayTime];
+    donutChart.data.datasets[0].data = donutData;
+    donutChart.update();
 
-      forskudttimer_aften_antal.innerHTML = eveningTime;
-      forskudttimer_aften_beløb.value = (
-        eveningTime * forskudttimer_aften_sats.value
-      ).toFixed(2);
+    timeløn_antal.innerHTML = normalTime;
+    timeløn_beløb.value = (normalTime * timeløn_sats.value).toFixed(2);
 
-      forskudttimer_lørdag_antal.innerHTML = saturdayTime;
-      forskudttimer_lørdag_beløb.value = (
-        saturdayTime * forskudttimer_lørdag_sats.value
-      ).toFixed(2);
+    forskudttimer_aften_antal.innerHTML = eveningTime;
+    forskudttimer_aften_beløb.value = (
+      eveningTime * forskudttimer_aften_sats.value
+    ).toFixed(2);
 
-      forskudttimer_søndag_antal.innerHTML = sundayTime;
-      forskudttimer_søndag_beløb.value = (
-        sundayTime * forskudttimer_søndag_sats.value
-      ).toFixed(2);
+    forskudttimer_lørdag_antal.innerHTML = saturdayTime;
+    forskudttimer_lørdag_beløb.value = (
+      saturdayTime * forskudttimer_lørdag_sats.value
+    ).toFixed(2);
 
-      sygdom_antal.innerHTML = sickTime;
+    forskudttimer_søndag_antal.innerHTML = sundayTime;
+    forskudttimer_søndag_beløb.value = (
+      sundayTime * forskudttimer_søndag_sats.value
+    ).toFixed(2);
 
-      sygdom_beløb.value = (
-        sygdom_antal.innerHTML * timeløn_sats.value
-      ).toFixed(2);
+    sygdom_antal.innerHTML = sickTime;
 
-      if (timeløn_antal != 0) {
-        PFA_grundlag.innerHTML = (
-          +timeløn_beløb.value +
-          +forskudttimer_aften_beløb.value +
-          +forskudttimer_lørdag_beløb.value +
-          +forskudttimer_søndag_beløb.value +
-          +sygdom_beløb.value +
-          +opsparet_fritvalgsaftale_beløb.value +
-          +opsparet_feriepenge_beløb.value
-        ).toFixed(2);
-      }
-      PFA_beløb.value = (PFA_grundlag.innerHTML * PFA_sats.value).toFixed(2);
-      let ATP_beløb_value_High = -63.1;
-      let ATP_beløb_value = -31.55;
-      let ATP_beløb_value_Low = 0;
-      if (normalTime < 39) {
-        ATP_beløb.value = ATP_beløb_value_Low.toFixed(2);
-      } else if (normalTime > 39 && normalTime < 91) {
-        ATP_beløb.value = ATP_beløb_value.toFixed(2);
-      } else {
-        ATP_beløb.value = ATP_beløb_value_High.toFixed(2);
-      }
+    sygdom_beløb.value = (sygdom_antal.innerHTML * timeløn_sats.value).toFixed(
+      2
+    );
 
-      arbejdsmarkedsbidrag_grundlag.innerHTML = (
+    if (timeløn_antal != 0) {
+      PFA_grundlag.innerHTML = (
         +timeløn_beløb.value +
         +forskudttimer_aften_beløb.value +
         +forskudttimer_lørdag_beløb.value +
         +forskudttimer_søndag_beløb.value +
         +sygdom_beløb.value +
-        +udbetalingFritvalgs_beløb.value +
-        +udbetalingFeriepenge_beløb.value +
-        +PFA_beløb.value +
-        +ATP_beløb.value
+        +opsparet_fritvalgsaftale_beløb.value +
+        +opsparet_feriepenge_beløb.value
       ).toFixed(2);
+    }
+    PFA_beløb.value = (PFA_grundlag.innerHTML * PFA_sats.value).toFixed(2);
+    let ATP_beløb_value_High = -63.1;
+    let ATP_beløb_value = -31.55;
+    let ATP_beløb_value_Low = 0;
+    if (normalTime < 39) {
+      ATP_beløb.value = ATP_beløb_value_Low.toFixed(2);
+    } else if (normalTime > 39 && normalTime < 91) {
+      ATP_beløb.value = ATP_beløb_value.toFixed(2);
+    } else {
+      ATP_beløb.value = ATP_beløb_value_High.toFixed(2);
+    }
 
-      arbejdsmarkedsbidrag_beløb.value = (
-        +arbejdsmarkedsbidrag_sats.value *
-        +arbejdsmarkedsbidrag_grundlag.innerHTML
-      ).toFixed(2);
+    arbejdsmarkedsbidrag_grundlag.innerHTML = (
+      +timeløn_beløb.value +
+      +forskudttimer_aften_beløb.value +
+      +forskudttimer_lørdag_beløb.value +
+      +forskudttimer_søndag_beløb.value +
+      +sygdom_beløb.value +
+      +udbetalingFritvalgs_beløb.value +
+      +udbetalingFeriepenge_beløb.value +
+      +PFA_beløb.value +
+      +ATP_beløb.value
+    ).toFixed(2);
 
-      askat_grundlag.innerHTML = (
-        +arbejdsmarkedsbidrag_grundlag.innerHTML +
-        +arbejdsmarkedsbidrag_beløb.value
-      ).toFixed(2);
-      askat_beløb.value = (
-        +askat_grundlag.innerHTML * +askat_sats.value
-      ).toFixed(2);
+    arbejdsmarkedsbidrag_beløb.value = (
+      +arbejdsmarkedsbidrag_sats.value *
+      +arbejdsmarkedsbidrag_grundlag.innerHTML
+    ).toFixed(2);
 
-      let personaleforeningbeløb;
-      if (normalTime > 0) {
-        personaleforeningbeløb = 0;
-      } else {
-        personaleforeningbeløb = -20;
-      }
-      let amount10valueLOW = 0;
-      if (normalTime > 0) {
-        personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
-      } else {
-        personaleforening_beløb.value = amount10valueLOW.toFixed(2);
-      }
+    askat_grundlag.innerHTML = (
+      +arbejdsmarkedsbidrag_grundlag.innerHTML +
+      +arbejdsmarkedsbidrag_beløb.value
+    ).toFixed(2);
+    askat_beløb.value = (+askat_grundlag.innerHTML * +askat_sats.value).toFixed(
+      2
+    );
 
-      opsparet_fritvalgsaftale_grundlag.innerHTML = (
-        +timeløn_beløb.value +
-        +forskudttimer_aften_beløb.value +
-        +forskudttimer_lørdag_beløb.value +
-        +forskudttimer_søndag_beløb.value +
-        +sygdom_beløb.value
-      ).toFixed(2);
-      opsparet_fritvalgsaftale_beløb.value = (
-        +opsparet_fritvalgsaftale_grundlag.innerHTML *
-        +opsparet_fritvalgsaftale_sats.value
-      ).toFixed(2);
+    let personaleforeningbeløb;
+    if (normalTime > 0) {
+      personaleforeningbeløb = 0;
+    } else {
+      personaleforeningbeløb = -20;
+    }
+    let amount10valueLOW = 0;
+    if (normalTime > 0) {
+      personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
+    } else {
+      personaleforening_beløb.value = amount10valueLOW.toFixed(2);
+    }
 
-      opsparet_feriepenge_beløb.value = (
-        opsparet_fritvalgsaftale_grundlag.innerHTML * 0.125
-      ).toFixed(2);
+    opsparet_fritvalgsaftale_grundlag.innerHTML = (
+      +timeløn_beløb.value +
+      +forskudttimer_aften_beløb.value +
+      +forskudttimer_lørdag_beløb.value +
+      +forskudttimer_søndag_beløb.value +
+      +sygdom_beløb.value
+    ).toFixed(2);
+    opsparet_fritvalgsaftale_beløb.value = (
+      +opsparet_fritvalgsaftale_grundlag.innerHTML *
+      +opsparet_fritvalgsaftale_sats.value
+    ).toFixed(2);
 
-      personbidrag.innerHTML = (
-        +opsparet_fritvalgsaftale_grundlag.innerHTML +
-        +opsparet_feriepenge_beløb.value +
-        +opsparet_fritvalgsaftale_beløb.value
-      ).toFixed(2);
-      personbidrag_beløb.value = (
-        +personbidrag.innerHTML * +personbidrag_sats.value
-      ).toFixed(2);
+    opsparet_feriepenge_beløb.value = (
+      opsparet_fritvalgsaftale_grundlag.innerHTML * 0.125
+    ).toFixed(2);
 
-      udbetaling_beløb.value = (
-        +timeløn_beløb.value +
-        +forskudttimer_aften_beløb.value +
-        +forskudttimer_lørdag_beløb.value +
-        +forskudttimer_søndag_beløb.value +
-        +udbetalingFritvalgs_beløb.value +
-        +udbetalingFeriepenge_beløb.value +
-        +sygdom_beløb.value +
-        +PFA_beløb.value +
-        +ATP_beløb.value +
-        +arbejdsmarkedsbidrag_beløb.value +
-        +askat_beløb.value +
-        +personalerabat_beløb.value +
-        +personaleforening_beløb.value
-      ).toFixed(2);
+    personbidrag.innerHTML = (
+      +opsparet_fritvalgsaftale_grundlag.innerHTML +
+      +opsparet_feriepenge_beløb.value +
+      +opsparet_fritvalgsaftale_beløb.value
+    ).toFixed(2);
+    personbidrag_beløb.value = (
+      +personbidrag.innerHTML * +personbidrag_sats.value
+    ).toFixed(2);
 
-      let money_preview = document.getElementById("money_preview");
-      money_preview.innerHTML = "$ " + udbetaling_beløb.value;
+    udbetaling_beløb.value = (
+      +timeløn_beløb.value +
+      +forskudttimer_aften_beløb.value +
+      +forskudttimer_lørdag_beløb.value +
+      +forskudttimer_søndag_beløb.value +
+      +udbetalingFritvalgs_beløb.value +
+      +udbetalingFeriepenge_beløb.value +
+      +sygdom_beløb.value +
+      +PFA_beløb.value +
+      +ATP_beløb.value +
+      +arbejdsmarkedsbidrag_beløb.value +
+      +askat_beløb.value +
+      +personalerabat_beløb.value +
+      +personaleforening_beløb.value
+    ).toFixed(2);
 
-      let perk_preview = document.getElementById("perk_preview");
-      perk_preview.innerHTML = "$ " + personalerabat_beløb.value;
-
-      value5.innerHTML = udbetaling_beløb.value + " $";
-    })
-    .catch((error) => {
-      console.error("Error fetching data from server:", error);
-    });
+    money_preview.innerHTML = "$ " + udbetaling_beløb.value;
+    perk_preview.innerHTML = "$ " + personalerabat_beløb.value;
+    perk_preview_month.innerHTML = "Perk";
+    value5.innerHTML = udbetaling_beløb.value + " $";
+    money_preview_month.innerHTML = "Month of " + currentMonthSpan.innerHTML;
+  } catch (error) {
+    console.error("An error occurred:", error);
+    money_preview_month.innerHTML = "missing data";
+    perk_preview_month.innerHTML = "missing data";
+    perk_preview.innerHTML = "missing data";
+    money_preview.innerHTML = "missing data";
+  }
 }
 
 let paysheet_edit_active = false;
