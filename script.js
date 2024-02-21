@@ -24,7 +24,6 @@ let preview = document.getElementById("preview");
 let shiftList = document.getElementById("shiftListContainer");
 let shiftDetails = document.getElementById("shiftDetails");
 let year_panel = document.getElementById("year_panel");
-let yearButtons = document.querySelectorAll(".year");
 let deleteActive = false;
 let editActive = false;
 let sickActive = false;
@@ -197,14 +196,8 @@ function addNewYear() {
   fetch("/fileCount")
     .then((response) => response.json())
     .then((data) => {
-      let year = document.createElement("BUTTON");
       let yearCounter = data.count + 2017;
       let data_structure = createDataStructure();
-      year.setAttribute("class", "year");
-      year.setAttribute("id", "year" + yearCounter);
-      year.innerHTML = yearCounter;
-      year.style = "background-color: var(--gray);";
-      changeYear.appendChild(year);
       fetch("/createFile", {
         method: "POST",
         headers: {
@@ -212,12 +205,35 @@ function addNewYear() {
         },
         body: JSON.stringify({ yearCounter, data_structure }),
       });
+      createYearButtons();
     });
 }
+
+function createYearButtons() {
+  fetch("fileCount")
+    .then((response) => response.json())
+    .then((data) => {
+      changeYear.innerHTML = "";
+      if (data.count > 0) {
+        for (let i = 0; i < data.count; i++) {
+          let year = document.createElement("BUTTON");
+          let yearCounter = 2017 + i;
+          year.innerHTML = yearCounter;
+          year.setAttribute("class", "year");
+          year.setAttribute("id", "year" + yearCounter);
+          year.style = "background-color: var(--gray);";
+          changeYear.appendChild(year);
+        }
+      }
+    });
+}
+
+createYearButtons();
 
 document
   .getElementById("changeYear")
   .addEventListener("click", function (event) {
+    let yearButtons = document.querySelectorAll(".year");
     if (event.target.classList.contains("year")) {
       let clickedYear = event.target;
       currentYear = clickedYear.innerHTML;
@@ -498,9 +514,7 @@ async function loadCell() {
     week4.value = weekNumbers.week4;
     week5.value = weekNumbers.week5;
     week6.value = weekNumbers.week6;
-  } catch (error) {
-    console.log("loadCell NO");
-  }
+  } catch (error) {}
 
   updatePaysheet();
   updateListedShifts();
@@ -787,6 +801,7 @@ function changeMonth(direction) {
   }
 
   let currentYearBtn = document.getElementById("year" + currentYear);
+  let yearButtons = document.querySelectorAll(".year");
   yearButtons.forEach((otherYear) => {
     otherYear.style.backgroundColor = "var(--gray)";
     otherYear.classList.remove("active");
