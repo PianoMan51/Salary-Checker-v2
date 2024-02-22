@@ -799,12 +799,11 @@ body {
 #changeYear {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  overflow: scroll;
-  width: 800px;
+  max-width: 500px;
+  overflow-x: scroll;
+  height: 40px;
+  border-radius: 20px;
   gap: 10px;
-
 }
 
 #changeYear::-webkit-scrollbar {
