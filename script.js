@@ -1107,16 +1107,11 @@ async function updatePaysheet() {
 
     let personaleforeningbeløb;
     if (normalTime > 0) {
-      personaleforeningbeløb = 0;
-    } else {
       personaleforeningbeløb = -20;
-    }
-    let amount10valueLOW = 0;
-    if (normalTime > 0) {
-      personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
     } else {
-      personaleforening_beløb.value = amount10valueLOW.toFixed(2);
+      personaleforeningbeløb = 0;
     }
+    personaleforening_beløb.value = personaleforeningbeløb.toFixed(2);
 
     opsparet_fritvalgsaftale_grundlag.innerHTML = (
       +timeløn_beløb.value +
