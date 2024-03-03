@@ -122,6 +122,10 @@ editButton.addEventListener("click", () => {
       body: JSON.stringify(content),
     });
 
+    let td = document.getElementById(`td${number}`);
+    td.innerHTML = newStart + " " + newEnd;
+    loadCell();
+
     editShiftSection.style.display = "none";
     editData1.value = "";
     editData2.value = "";
@@ -133,7 +137,6 @@ editButton.addEventListener("click", () => {
 
     editActive = false;
 
-    let td = document.getElementById(`td${number}`);
     if (td) {
       td.classList.remove("beingEdit");
       td.classList.add("on");
