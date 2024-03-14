@@ -1574,7 +1574,6 @@ function updateListedShifts() {
 }
 
 function editShift(event) {
-  console.log(event.target.classList);
   if (event.target.classList == "on" && editActive === true) {
     let editData1 = document.getElementById("shiftDetailStart");
     let editData2 = document.getElementById("shiftDetailEnd");
@@ -1611,8 +1610,6 @@ function editShift(event) {
           console.error("Error fetching data:", error);
         });
     }
-  } else {
-    console.log("no");
   }
 }
 
