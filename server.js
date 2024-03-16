@@ -250,6 +250,7 @@ app.get("/fileCount", (req, res) => {
     res.json({ count: files.length });
   });
 });
+
 app.post("/createFile", (req, res) => {
   const count = req.body.yearCounter;
   const data_structure = req.body.data_structure;

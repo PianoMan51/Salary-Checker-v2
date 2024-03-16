@@ -506,7 +506,6 @@ body {
 
 #paysheet {
   height: 100%;
-
 }
 
 #paysheetContainer {
@@ -533,7 +532,7 @@ body {
 
 #paysheet input:disabled {
   background-color: transparent;
-  color: var(--darkbackground)
+  color: var(--darkbackground);
 }
 
 .edit_active {
@@ -596,9 +595,6 @@ body {
   height: 300px;
 }
 
-
-
-
 /* ///////////////////////// */
 
 #labels {
@@ -628,7 +624,6 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-
 }
 
 .section {
@@ -779,7 +774,7 @@ body {
   align-items: center;
   justify-content: space-around;
   cursor: pointer;
-  transform: scale(1.);
+  transform: scale(1);
   transition: all ease-in-out 0.15s;
 }
 
@@ -795,11 +790,10 @@ body {
   transform: scale(1.1);
 }
 
-
 #changeYear {
   display: flex;
   flex-direction: row;
-  max-width: 500px;
+  max-width: 700px;
   overflow-x: scroll;
   height: 40px;
   border-radius: 20px;
@@ -1025,7 +1019,7 @@ body {
   justify-content: space-between;
   align-items: center;
   font-size: 24px;
-  color: var(--darkestgray)
+  color: var(--darkestgray);
 }
 
 #yearMonthContainer {

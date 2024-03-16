@@ -24,13 +24,35 @@ let preview = document.getElementById("preview");
 let shiftList = document.getElementById("shiftListContainer");
 let shiftDetails = document.getElementById("shiftDetails");
 let year_panel = document.getElementById("year_panel");
+let year_buttons = document.getElementById("changeYear");
 let deleteActive = false;
 let editActive = false;
 let sickActive = false;
 let holyActive = false;
+let quickStart = true;
 let number;
 let currentlyEditedElement = null;
 let weekday;
+let nav1 = document.getElementById("navButton1");
+let nav2 = document.getElementById("navButton2");
+let nav3 = document.getElementById("navButton3");
+let nav4 = document.getElementById("navButton4");
+let allPages = document.querySelectorAll(".page");
+let defaultPageId = "page_nav1";
+let pageId = localStorage.getItem("pageId") || defaultPageId;
+let week1 = document.getElementById("week1");
+let week2 = document.getElementById("week2");
+let week3 = document.getElementById("week3");
+let week4 = document.getElementById("week4");
+let week5 = document.getElementById("week5");
+let week6 = document.getElementById("week6");
+let money_preview_month = document.getElementById("money_preview_month");
+let perk_preview_month = document.getElementById("perk_preview_month");
+let perk_preview = document.getElementById("perk_preview");
+let money_preview = document.getElementById("money_preview");
+let paysheet_edit_active = false;
+let paysheet_edit_button = document.getElementById("paysheet_editbutton");
+let editable = document.querySelectorAll(".editable");
 let monthNames = [
   "January",
   "February",
@@ -45,7 +67,6 @@ let monthNames = [
   "November",
   "December",
 ];
-changeMonth();
 
 deleteButton.addEventListener("click", () => {
   deleteActive = !deleteActive;
@@ -124,7 +145,6 @@ editButton.addEventListener("click", () => {
 
     let td = document.getElementById(`td${number}`);
     td.innerHTML = newStart + " " + newEnd;
-    loadCell();
 
     editShiftSection.style.display = "none";
     editData1.value = "";
@@ -141,11 +161,129 @@ editButton.addEventListener("click", () => {
       td.classList.remove("beingEdit");
       td.classList.add("on");
     }
+    loadCell();
+    updateListedShifts();
   }
-  loadCell();
 });
 
 document.getElementById("add_newYear").addEventListener("click", addNewYear);
+
+year_buttons.addEventListener("click", function (event) {
+  let yearButtons = document.querySelectorAll(".year");
+  if (event.target.classList.contains("year")) {
+    let clickedYear = event.target;
+    currentYear = clickedYear.innerHTML;
+    localStorage.setItem("currentYear", currentYear);
+
+    yearButtons.forEach((otherYear) => {
+      otherYear.style.backgroundColor = "var(--gray)";
+      otherYear.classList.remove("active");
+    });
+
+    clickedYear.style.backgroundColor = "var(--darkergray)";
+    clickedYear.classList.add("active");
+
+    loadCell();
+  }
+});
+
+document.querySelectorAll(".calendar_button").forEach((calendarButton) => {
+  calendarButton.addEventListener("click", function () {
+    let isButtonOn = calendarButton.classList.contains("button_on");
+    allCalendarButtons.forEach((button) => {
+      button.classList.remove("button_on");
+    });
+
+    allCalendarDots.forEach((dot) => {
+      dot.style.opacity = "0";
+    });
+
+    if (!isButtonOn) {
+      calendarButton.classList.add("button_on");
+      let currentDot = document.getElementById(
+        calendarButton.id.substring(9) + "_dot"
+      );
+      currentDot.style.opacity = "1";
+    }
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  let page = document.getElementById(pageId);
+
+  allPages.forEach((c) => {
+    c.style.display = "none";
+  });
+
+  page.style.display = "flex";
+  if (pageId == "page_nav4") {
+    loadTotalData();
+  }
+});
+
+document.querySelectorAll(".nav button").forEach((button) => {
+  button.addEventListener("click", function () {
+    pageId = "page_" + button.id;
+    let content = document.getElementById(pageId);
+
+    allPages.forEach((c) => {
+      c.style.display = "none";
+    });
+
+    content.style.display = "flex";
+    localStorage.setItem("pageId", pageId);
+
+    if (pageId == "page_nav4") {
+      loadTotalData();
+    }
+  });
+});
+
+document.querySelectorAll(".quickSelect").forEach((quickSelect) => {
+  quickSelect.addEventListener("mouseover", function () {
+    document.querySelectorAll(".quickSelect").forEach((button) => {
+      button.style.opacity = 0.5;
+      this.style.opacity = 1;
+    });
+    if (quickStart == true) {
+      start.style.transform = "scale(1.1)";
+      end.style.opacity = 0.5;
+      end.style.transform = "scale(0.9)";
+    } else {
+      end.style.transform = "scale(1.1)";
+      start.style.opacity = 0.5;
+      start.style.transform = "scale(0.9)";
+    }
+  });
+  quickSelect.addEventListener("mouseout", function () {
+    document.querySelectorAll(".quickSelect").forEach((button) => {
+      button.style.opacity = 1;
+    });
+    start.style.transform = "scale(1)";
+    start.style.opacity = 1;
+    end.style.transform = "scale(1)";
+    end.style.opacity = 1;
+  });
+
+  quickSelect.addEventListener("click", function () {
+    let time = quickSelect.innerHTML;
+    if (quickStart == true) {
+      start.value = time;
+      quickStart = false;
+    } else {
+      end.value = time;
+      quickStart = true;
+    }
+  });
+});
+
+prevBtn.addEventListener("click", function () {
+  changeMonth("prev");
+});
+
+nextBtn.addEventListener("click", function () {
+  changeMonth("next");
+});
 
 function createDataStructure() {
   let data_structure = [];
@@ -199,7 +337,7 @@ function addNewYear() {
   fetch("/fileCount")
     .then((response) => response.json())
     .then((data) => {
-      let yearCounter = data.count + 2017;
+      let yearCounter = data.count + 2018;
       let data_structure = createDataStructure();
       fetch("/createFile", {
         method: "POST",
@@ -220,7 +358,7 @@ function createYearButtons() {
       if (data.count > 0) {
         for (let i = 0; i < data.count; i++) {
           let year = document.createElement("BUTTON");
-          let yearCounter = 2017 + i;
+          let yearCounter = 2018 + i;
           year.innerHTML = yearCounter;
           year.setAttribute("class", "year");
           year.setAttribute("id", "year" + yearCounter);
@@ -228,89 +366,10 @@ function createYearButtons() {
           changeYear.appendChild(year);
         }
       }
+      document.getElementById("year" + currentYear).style.backgroundColor =
+        "var(--darkestgray)";
     });
 }
-
-createYearButtons();
-
-document
-  .getElementById("changeYear")
-  .addEventListener("click", function (event) {
-    let yearButtons = document.querySelectorAll(".year");
-    if (event.target.classList.contains("year")) {
-      let clickedYear = event.target;
-      currentYear = clickedYear.innerHTML;
-      localStorage.setItem("currentYear", currentYear);
-
-      yearButtons.forEach((otherYear) => {
-        otherYear.style.backgroundColor = "var(--gray)";
-        otherYear.classList.remove("active");
-      });
-
-      clickedYear.style.backgroundColor = "var(--darkergray)";
-      clickedYear.classList.add("active");
-
-      loadCell();
-      updatePaysheet();
-      updateMonthChart();
-      updateYearChart();
-      updateListedShifts();
-    }
-  });
-
-document.querySelectorAll(".calendar_button").forEach((calendarButton) => {
-  calendarButton.addEventListener("click", function () {
-    let isButtonOn = calendarButton.classList.contains("button_on");
-    allCalendarButtons.forEach((button) => {
-      button.classList.remove("button_on");
-    });
-
-    allCalendarDots.forEach((dot) => {
-      dot.style.opacity = "0";
-    });
-
-    if (!isButtonOn) {
-      calendarButton.classList.add("button_on");
-      let currentDot = document.getElementById(
-        calendarButton.id.substring(9) + "_dot"
-      );
-      currentDot.style.opacity = "1";
-    }
-  });
-});
-
-let nav1 = document.getElementById("navButton1");
-let nav2 = document.getElementById("navButton2");
-let nav3 = document.getElementById("navButton3");
-let nav4 = document.getElementById("navButton4");
-
-let allPages = document.querySelectorAll(".page");
-let defaultPageId = "page_nav1";
-let pageId = localStorage.getItem("pageId") || defaultPageId;
-
-document.addEventListener("DOMContentLoaded", () => {
-  let page = document.getElementById(pageId);
-
-  allPages.forEach((c) => {
-    c.style.display = "none";
-  });
-
-  page.style.display = "flex";
-});
-
-document.querySelectorAll(".nav button").forEach((button) => {
-  button.addEventListener("click", function () {
-    pageId = "page_" + button.id;
-    let content = document.getElementById(pageId);
-
-    allPages.forEach((c) => {
-      c.style.display = "none";
-    });
-
-    content.style.display = "flex";
-    localStorage.setItem("pageId", pageId);
-  });
-});
 
 function calculateTimeDifference(start, end) {
   let startTime = new Date(`2000-01-01T${start}`);
@@ -345,51 +404,6 @@ function calculateLunch(start, end) {
   }
   return lunch;
 }
-let quickStart = true;
-document.querySelectorAll(".quickSelect").forEach((quickSelect) => {
-  quickSelect.addEventListener("mouseover", function () {
-    document.querySelectorAll(".quickSelect").forEach((button) => {
-      button.style.opacity = 0.5;
-      this.style.opacity = 1;
-    });
-    if (quickStart == true) {
-      start.style.transform = "scale(1.1)";
-      end.style.opacity = 0.5;
-      end.style.transform = "scale(0.9)";
-    } else {
-      end.style.transform = "scale(1.1)";
-      start.style.opacity = 0.5;
-      start.style.transform = "scale(0.9)";
-    }
-  });
-  quickSelect.addEventListener("mouseout", function () {
-    document.querySelectorAll(".quickSelect").forEach((button) => {
-      button.style.opacity = 1;
-    });
-    start.style.transform = "scale(1)";
-    start.style.opacity = 1;
-    end.style.transform = "scale(1)";
-    end.style.opacity = 1;
-  });
-
-  quickSelect.addEventListener("click", function () {
-    let time = quickSelect.innerHTML;
-    if (quickStart == true) {
-      start.value = time;
-      quickStart = false;
-    } else {
-      end.value = time;
-      quickStart = true;
-    }
-  });
-});
-
-let week1 = document.getElementById("week1");
-let week2 = document.getElementById("week2");
-let week3 = document.getElementById("week3");
-let week4 = document.getElementById("week4");
-let week5 = document.getElementById("week5");
-let week6 = document.getElementById("week6");
 
 async function loadCell() {
   let tdElements = document.querySelectorAll("#calendar td");
@@ -467,26 +481,6 @@ async function loadCell() {
 
     shiftCount.innerHTML = shiftCounter;
     updateMonthChart(monthChartData);
-    updateYearChart(yearChartData, yearChartSalary);
-
-    let overallChartData = [];
-
-    for (let year = 2017; year < 2025; year++) {
-      fetch(`/data?currentYear=${year}`)
-        .then((response) => response.json())
-        .then((data) => {
-          let yearTotal = 0;
-          for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < monthData.length; j++) {
-              if (data[i][0][j]) {
-                yearTotal += data[i][0][j].time;
-              }
-            }
-          }
-          overallChartData.push(yearTotal);
-          updateTotalChart(overallChartData);
-        });
-    }
 
     for (let i = 0; i < monthData.length; i++) {
       let tdId = "tdp" + i;
@@ -496,6 +490,8 @@ async function loadCell() {
         previewElememt.classList.remove("off");
       }
     }
+
+    updateYearChart(yearChartData, yearChartSalary);
   } catch (error) {
     let tdElements = document.querySelectorAll("#calendar td");
     tdElements.forEach((td) => {
@@ -725,7 +721,7 @@ Array.from(tdElements).forEach((td) => {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML = data[currentIndex][0][number].time + "h";
+          td.innerHTML = data[currentIndex][0][number].time.toFixed(2) + "h";
         });
     }
   });
@@ -779,12 +775,7 @@ Array.from(tdElements).forEach((td) => {
   });
 });
 
-loadCell();
-updatePaysheet();
-
 function changeMonth(direction) {
-  loadCell();
-
   let currentMonthSpan = document.getElementById("currentMonth");
   let currentMonth = currentMonthSpan.innerHTML;
   currentIndex = monthNames.indexOf(currentMonth);
@@ -795,9 +786,15 @@ function changeMonth(direction) {
       currentYear--;
     }
   } else if (direction === "next") {
-    currentIndex = (currentIndex + 1) % 12;
-    if (currentIndex === 0) {
-      currentYear++;
+    if (
+      !(currentYear == 2017 + changeYear.children.length && currentIndex == 11)
+    ) {
+      currentIndex = (currentIndex + 1) % 12;
+      if (currentIndex === 0) {
+        currentYear++;
+      }
+    } else {
+      alert("you shall not pass");
     }
   } else {
     currentIndex = localStorage.getItem("currentIndex") || 0;
@@ -820,19 +817,6 @@ function changeMonth(direction) {
   updatePaysheet();
   updateListedShifts();
 }
-
-prevBtn.addEventListener("click", function () {
-  changeMonth("prev");
-});
-
-nextBtn.addEventListener("click", function () {
-  changeMonth("next");
-});
-
-let money_preview_month = document.getElementById("money_preview_month");
-let perk_preview_month = document.getElementById("perk_preview_month");
-let perk_preview = document.getElementById("perk_preview");
-let money_preview = document.getElementById("money_preview");
 
 async function updatePaysheet() {
   let timeløn_antal = document.getElementById("timeløn_antal");
@@ -1171,10 +1155,6 @@ async function updatePaysheet() {
   }
 }
 
-let paysheet_edit_active = false;
-let paysheet_edit_button = document.getElementById("paysheet_editbutton");
-let editable = document.querySelectorAll(".editable");
-
 function updatePaysheetRates() {
   paysheet_edit_active = !paysheet_edit_active;
   if (paysheet_edit_active) {
@@ -1223,201 +1203,30 @@ function updatePaysheetRates() {
   }
 }
 
-let donutChart = new Chart("progress_circle", {
-  type: "doughnut",
-  data: {
-    datasets: [
-      {
-        data: [],
-        backgroundColor: ["#3498db", "#2c3e50", "#f39c12", "#c0392b"],
-      },
-    ],
-  },
-  options: {
-    borderWidth: 3,
-    borderRadius: 15,
-    onHover: { mode: null },
-    cutout: 90,
-  },
-});
-donutChart.update();
+async function loadTotalData() {
+  let overallChartData = [];
 
-let monthChart = new Chart("progress_month", {
-  type: "bar",
-  data: {
-    labels: [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-    ],
-    datasets: [
-      {
-        data: [],
-        backgroundColor: "#3498db",
-        borderRadius: 10,
-      },
-    ],
-  },
-  options: {
-    scales: {
-      y: {
-        min: 0,
-        max: 14,
-        display: false,
-      },
-      x: {
-        grid: {
-          display: true,
-        },
-        display: false,
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-  },
-});
-monthChart.update();
+  try {
+    for (let year = 2018; year < 2025; year++) {
+      const response = await fetch(`/data?currentYear=${year}`);
+      const data = await response.json();
 
-let yearChart = new Chart("progress_year", {
-  type: "bar",
-  data: {
-    labels: [
-      "JAN",
-      "FEB",
-      "MAR",
-      "APR",
-      "JUN",
-      "JUL",
-      "AUG",
-      "SEP",
-      "OCT",
-      "NOV",
-      "DEC",
-    ],
-    datasets: [
-      {
-        data: [],
-        backgroundColor: "#3498db",
-        borderRadius: 10,
-        yAxisID: "y",
-      },
-      {
-        data: [],
-        backgroundColor: "#4cd137",
-        borderRadius: 10,
-        yAxisID: "y1",
-      },
-    ],
-  },
-  options: {
-    scales: {
-      y: {
-        type: "linear",
-        display: true,
-        min: 0,
-        max: 120,
-        position: "left",
-        grid: {
-          display: false,
-        },
-      },
-      y1: {
-        type: "linear",
-        display: true,
-        min: 0,
-        max: 12000,
-        position: "right",
-        grid: {
-          display: false,
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-  },
-});
-yearChart.update();
-
-let totalChart = new Chart("progress_total", {
-  type: "bar",
-  data: {
-    labels: ["2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
-    datasets: [
-      {
-        data: [],
-        backgroundColor: "#3498db",
-        borderRadius: 10,
-      },
-    ],
-  },
-  options: {
-    scales: {
-      y: {
-        display: false,
-      },
-      x: {
-        grid: {
-          display: true,
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-  },
-});
-totalChart.update();
+      let yearTotal = 0;
+      for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < data[i][0].length; j++) {
+          if (data[i][0][j]) {
+            yearTotal += data[i][0][j].time;
+          }
+        }
+      }
+      overallChartData.push(yearTotal);
+      updateTotalChart(overallChartData);
+    }
+  } catch (error) {
+    alert("No data available.");
+    console.error(error);
+  }
+}
 
 function updateMonthChart(monthChartData) {
   monthChart.data.datasets[0].data = monthChartData;
@@ -1677,3 +1486,205 @@ function holyShift(event) {
     loadCell();
   }
 }
+
+let donutChart = new Chart("progress_circle", {
+  type: "doughnut",
+  data: {
+    datasets: [
+      {
+        data: [],
+        backgroundColor: ["#3498db", "#2c3e50", "#f39c12", "#c0392b"],
+      },
+    ],
+  },
+  options: {
+    borderWidth: 3,
+    borderRadius: 15,
+    onHover: { mode: null },
+    cutout: 90,
+  },
+});
+
+let monthChart = new Chart("progress_month", {
+  type: "bar",
+  data: {
+    labels: [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+    ],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: "#3498db",
+        borderRadius: 10,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        min: 0,
+        max: 14,
+        display: false,
+      },
+      x: {
+        grid: {
+          display: true,
+        },
+        display: false,
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  },
+});
+
+let yearChart = new Chart("progress_year", {
+  type: "bar",
+  data: {
+    labels: [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: "#3498db",
+        borderRadius: 10,
+        yAxisID: "y",
+      },
+      {
+        data: [],
+        backgroundColor: "#4cd137",
+        borderRadius: 10,
+        yAxisID: "y1",
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        type: "linear",
+        display: true,
+        min: 0,
+        max: 120,
+        position: "left",
+        grid: {
+          display: false,
+        },
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        min: 0,
+        max: 14000,
+        position: "right",
+        grid: {
+          display: false,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  },
+});
+
+let totalChart = new Chart("progress_total", {
+  type: "bar",
+  data: {
+    labels: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: "#3498db",
+        borderRadius: 10,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        display: false,
+      },
+      x: {
+        grid: {
+          display: true,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  },
+});
+
+donutChart.update();
+monthChart.update();
+yearChart.update();
+totalChart.update();
+loadCell();
+updatePaysheet();
+changeMonth();
+createYearButtons();
