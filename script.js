@@ -96,7 +96,7 @@ holyButton.addEventListener("click", () => {
 });
 
 editButton.addEventListener("click", () => {
-  editActive = true;
+  editActive = !editActive;
 });
 
 document.getElementById("add_newYear").addEventListener("click", addNewYear);
@@ -498,14 +498,19 @@ let addShift = (event) => {
       if (deleteActive === false && holyActive === false) {
         if (!isNaN(currentIndex)) {
           if (document.getElementById(tdId).classList == "off") {
+            let shiftStart = new Date(`2000-01-01T${start.value}:00`);
+            let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
+            if (shiftStart > shiftEnd) {
+              alert("Not possible");
+              return;
+            }
+
             let weekday = calculateWeekday(tdId.substring(2));
             let eveningTotal = 0;
             let eveningHours = 0;
 
             //// EVENING ////
             if (weekday !== "Saturday" && weekday !== "Sunday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
               let eveningStart = new Date(`2000-01-01T18:00:00`);
 
               if (shiftEnd <= eveningStart) {
@@ -530,8 +535,6 @@ let addShift = (event) => {
             let saturdayTotal = 0;
             let saturdayHours = 0;
             if (weekday == "Saturday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
               let saturdayStart = new Date(`2000-01-01T15:00:00`);
 
               if (shiftEnd <= saturdayStart) {
@@ -557,8 +560,6 @@ let addShift = (event) => {
             let sundayHours = 0;
             let sundayTotal = 0;
             if (weekday == "Sunday") {
-              let shiftStart = new Date(`2000-01-01T${start.value}:00`);
-              let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
               sundayTotal = shiftEnd - shiftStart;
               sundayHours =
                 sundayTotal / (1000 * 60 * 60) -
@@ -593,24 +594,26 @@ let addShift = (event) => {
           updateListedShifts();
         }
       } else {
-        let nothing = null;
-        if (event.target.classList.contains("sick")) {
-          event.target.classList.remove("sick");
-        }
-        fetch(`/data?currentYear=${currentYear}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ tdId, nothing, currentIndex }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            loadCell();
+        if (event.target.classList.contains !== "off") {
+          let nothing = null;
+          if (event.target.classList.contains("sick")) {
+            event.target.classList.remove("sick");
+          }
+          fetch(`/data?currentYear=${currentYear}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ tdId, nothing, currentIndex }),
           })
-          .catch((error) => console.error("Error:", error));
-        updateListedShifts();
-        loadCell();
+            .then((response) => response.json())
+            .then((data) => {
+              loadCell();
+            })
+            .catch((error) => console.error("Error:", error));
+          updateListedShifts();
+          loadCell();
+        }
       }
     }
   }
@@ -618,6 +621,7 @@ let addShift = (event) => {
 };
 
 Array.from(tdElements).forEach((td) => {
+  let tdId = td.id;
   td.addEventListener("click", addShift);
   td.addEventListener("click", editShift);
   td.addEventListener("click", sickShift);
@@ -870,12 +874,17 @@ async function updatePaysheet() {
       paysheetRatesData[currentIndex][2].personbidrag_sats;
     let accumulatedFritvalgskonto =
       +paysheetRatesData[0][2].opsparet_fritvalgsaftale_beløb;
+    let accumulatedPersonalerabat =
+      +paysheetRatesData[0][2].personalerabat_beløb;
     let accumulatedFeriepenge =
       +paysheetRatesData[0][2].opsparet_feriepenge_beløb;
     let accumulatedUdbetalt = +paysheetRatesData[0][2].udbetaling_beløb;
 
     let accumFritvalgsSpan = document.getElementById("accumulatedFritvalgs");
     let accumFeriepengeSpan = document.getElementById("accumulatedFeriepenge");
+    let accumPersonalerabatSpan = document.getElementById(
+      "accumulatedPersonalerabat"
+    );
     let accumUdbetaltSpan = document.getElementById("accumulatedUdbetaling");
 
     for (let i = 0; i < currentIndex; i++) {
@@ -883,10 +892,14 @@ async function updatePaysheet() {
         +paysheetRatesData[i][2].opsparet_fritvalgsaftale_beløb;
       accumulatedFeriepenge +=
         +paysheetRatesData[i][2].opsparet_feriepenge_beløb;
+      accumulatedPersonalerabat +=
+        +paysheetRatesData[i][2].personalerabat_beløb;
       accumulatedUdbetalt += +paysheetRatesData[i][2].udbetaling_beløb;
     }
     accumFritvalgsSpan.innerHTML = "$ " + accumulatedFritvalgskonto.toFixed(2);
     accumFeriepengeSpan.innerHTML = "$ " + accumulatedFeriepenge.toFixed(2);
+    accumPersonalerabatSpan.innerHTML =
+      "$ " + accumulatedPersonalerabat.toFixed(2);
     accumUdbetaltSpan.innerHTML = "$ " + accumulatedUdbetalt.toFixed(2);
 
     accumFritvalgsSpan.addEventListener("mouseout", function () {
@@ -1311,7 +1324,6 @@ function updateListedShifts() {
 
 function editShift(event) {
   let tdId = event.target.id.substring(2);
-  console.log(tdId);
   let td = document.getElementById(event.target.id).classList;
   let editData1 = document.getElementById("shiftDetailStart");
   let editData2 = document.getElementById("shiftDetailEnd");
@@ -1330,7 +1342,7 @@ function editShift(event) {
         currentlyEditedElement.add("on");
       }
       currentlyEditedElement = td;
-      console.log(td);
+      console.log(currentlyEditedElement);
 
       td.add("beingEdit");
       td.remove("on");
@@ -1381,17 +1393,18 @@ function editShift(event) {
       });
 
       editShiftSection.style.display = "none";
-      editData1.value = "";
+      /* editData1.value = "";
       editData2.value = "";
       editData3.value = "";
       editData4.value = "";
       editData5.value = "";
       editData6.value = "";
-      editData7.value = "";
+      editData7.value = ""; */
 
-      editActive = false;
       td.add("on");
       td.remove("beingEdit");
+      currentlyEditedElement = null;
+      loadCell();
     });
   }
 }
