@@ -30,7 +30,6 @@ let editActive = false;
 let sickActive = false;
 let holyActive = false;
 let quickStart = true;
-let number;
 let currentlyEditedElement = null;
 let weekday;
 let nav1 = document.getElementById("navButton1");
@@ -97,73 +96,7 @@ holyButton.addEventListener("click", () => {
 });
 
 editButton.addEventListener("click", () => {
-  editActive = !editActive;
-  sickActive = false;
-  holyActive = false;
-  deleteActive = false;
-
-  let editData1 = document.getElementById("shiftDetailStart");
-  let editData2 = document.getElementById("shiftDetailEnd");
-  let editData3 = document.getElementById("shiftDetailTime");
-  let editData4 = document.getElementById("shiftDetailBreak");
-  let editData5 = document.getElementById("shiftDetailEvening");
-  let editData6 = document.getElementById("shiftDetailSaturday");
-  let editData7 = document.getElementById("shiftDetailSunday");
-
-  if (editActive == true) {
-    editShiftSection.style.display = "flex";
-    quickSelects.style.display = "none";
-  } else {
-    editShiftSection.style.display = "none";
-    quickSelects.style.display = "flex";
-
-    let newStart = editData1.value;
-    let newEnd = editData2.value;
-    let newTime = editData3.value;
-    let newlunch = editData4.value;
-    let newEvening = editData5.value;
-    let newSaturday = editData6.value;
-    let newSunday = editData7.value;
-
-    let content = {
-      start: newStart,
-      end: newEnd,
-      time: newTime,
-      lunch: newlunch,
-      evening: newEvening,
-      saturday: newSaturday,
-      sunday: newSunday,
-      state: 0,
-      currentIndex: currentIndex,
-    };
-
-    fetch(`/data/${currentIndex}/${number}?currentYear=${currentYear}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(content),
-    });
-
-    let td = document.getElementById(`td${number}`);
-    td.innerHTML = newStart + " " + newEnd;
-
-    editShiftSection.style.display = "none";
-    editData1.value = "";
-    editData2.value = "";
-    editData3.value = "";
-    editData4.value = "";
-    editData5.value = "";
-    editData6.value = "";
-    editData7.value = "";
-
-    editActive = false;
-
-    if (td) {
-      td.classList.remove("beingEdit");
-      td.classList.add("on");
-    }
-    loadCell();
-    updateListedShifts();
-  }
+  editActive = true;
 });
 
 document.getElementById("add_newYear").addEventListener("click", addNewYear);
@@ -560,13 +493,12 @@ let calculateWeekday = (number) => {
 
 let addShift = (event) => {
   let tdId = event.target.id;
-  let number = tdId.match(/\d+/);
   if (pageId == "page_nav2") {
     if (editActive === false) {
       if (deleteActive === false && holyActive === false) {
         if (!isNaN(currentIndex)) {
           if (document.getElementById(tdId).classList == "off") {
-            let weekday = calculateWeekday(Number(number)); // Assuming the calculateWeekday function is available
+            let weekday = calculateWeekday(tdId.substring(2));
             let eveningTotal = 0;
             let eveningHours = 0;
 
@@ -692,21 +624,19 @@ Array.from(tdElements).forEach((td) => {
   td.addEventListener("click", holyShift);
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("sick")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML =
-            data[currentIndex][0][number].start +
+            data[currentIndex][0][tdId.substring(2)].start +
             " " +
-            data[currentIndex][0][number].end;
+            data[currentIndex][0][tdId.substring(2)].end;
         });
     }
   });
   //sick
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("sick")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
@@ -717,17 +647,16 @@ Array.from(tdElements).forEach((td) => {
   //holy
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("holy")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML = data[currentIndex][0][number].time.toFixed(2) + "h";
+          td.innerHTML =
+            data[currentIndex][0][tdId.substring(2)].time.toFixed(2) + "h";
         });
     }
   });
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("holy")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
@@ -738,25 +667,23 @@ Array.from(tdElements).forEach((td) => {
   //normal
   td.addEventListener("mouseover", function () {
     if (td.classList.contains("on")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML = data[currentIndex][0][number].time + "h";
+          td.innerHTML = data[currentIndex][0][td.id.substring(2)].time + "h";
           td.style.fontSize = "16px";
         });
     }
   });
   td.addEventListener("mouseout", function () {
     if (td.classList.contains("on")) {
-      number = parseInt(td.id.match(/\d+/)[0]);
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML =
-            data[currentIndex][0][number].start +
+            data[currentIndex][0][td.id.substring(2)].start +
             " " +
-            data[currentIndex][0][number].end;
+            data[currentIndex][0][td.id.substring(2)].end;
         });
     }
   });
@@ -1383,30 +1310,34 @@ function updateListedShifts() {
 }
 
 function editShift(event) {
-  if (event.target.classList == "on" && editActive === true) {
-    let editData1 = document.getElementById("shiftDetailStart");
-    let editData2 = document.getElementById("shiftDetailEnd");
-    let editData3 = document.getElementById("shiftDetailTime");
-    let editData4 = document.getElementById("shiftDetailBreak");
-    let editData5 = document.getElementById("shiftDetailEvening");
-    let editData6 = document.getElementById("shiftDetailSaturday");
-    let editData7 = document.getElementById("shiftDetailSunday");
-    let tdId = event.target.id;
-    number = parseInt(tdId.match(/\d+/)[0]);
-    let td = document.getElementById(tdId).classList;
+  let tdId = event.target.id.substring(2);
+  console.log(tdId);
+  let td = document.getElementById(event.target.id).classList;
+  let editData1 = document.getElementById("shiftDetailStart");
+  let editData2 = document.getElementById("shiftDetailEnd");
+  let editData3 = document.getElementById("shiftDetailTime");
+  let editData4 = document.getElementById("shiftDetailBreak");
+  let editData5 = document.getElementById("shiftDetailEvening");
+  let editData6 = document.getElementById("shiftDetailSaturday");
+  let editData7 = document.getElementById("shiftDetailSunday");
+  if (editActive === true) {
+    if (event.target.classList == "on") {
+      editShiftSection.style.display = "flex";
+      quickSelects.style.display = "none";
 
-    if (currentlyEditedElement && currentlyEditedElement !== td) {
-      currentlyEditedElement.remove("beingEdit");
-      currentlyEditedElement.add("on");
-    }
-    currentlyEditedElement = td;
-    if (td == "on") {
+      if (currentlyEditedElement && currentlyEditedElement !== td) {
+        currentlyEditedElement.remove("beingEdit");
+        currentlyEditedElement.add("on");
+      }
+      currentlyEditedElement = td;
+      console.log(td);
+
       td.add("beingEdit");
       td.remove("on");
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          let shiftToEdit = data[currentIndex][0][number];
+          let shiftToEdit = data[currentIndex][0][tdId];
           editData1.value = shiftToEdit.start;
           editData2.value = shiftToEdit.end;
           editData3.value = shiftToEdit.time;
@@ -1419,6 +1350,49 @@ function editShift(event) {
           console.error("Error fetching data:", error);
         });
     }
+    editButton.addEventListener("click", () => {
+      let newStart = editData1.value;
+      let newEnd = editData2.value;
+      let newTime = editData3.value;
+      let newlunch = editData4.value;
+      let newEvening = editData5.value;
+      let newSaturday = editData6.value;
+      let newSunday = editData7.value;
+
+      editShiftSection.style.display = "none";
+      quickSelects.style.display = "flex";
+
+      let content = {
+        start: newStart,
+        end: newEnd,
+        time: newTime,
+        lunch: newlunch,
+        evening: newEvening,
+        saturday: newSaturday,
+        sunday: newSunday,
+        state: 0,
+        currentIndex: currentIndex,
+      };
+
+      fetch(`/data/${currentIndex}/${tdId}?currentYear=${currentYear}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(content),
+      });
+
+      editShiftSection.style.display = "none";
+      editData1.value = "";
+      editData2.value = "";
+      editData3.value = "";
+      editData4.value = "";
+      editData5.value = "";
+      editData6.value = "";
+      editData7.value = "";
+
+      editActive = false;
+      td.add("on");
+      td.remove("beingEdit");
+    });
   }
 }
 
@@ -1427,28 +1401,32 @@ function sickShift(event) {
     loadCell();
     let tdId = event.target.id;
     let td = document.getElementById(tdId).classList;
-    number = parseInt(tdId.match(/\d+/)[0]);
 
     if (td == "on") {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
           let content = {
-            start: data[currentIndex][0][number].start,
-            end: data[currentIndex][0][number].end,
-            time: data[currentIndex][0][number].time,
+            start: data[currentIndex][0][tdId.substring(2)].start,
+            end: data[currentIndex][0][tdId.substring(2)].end,
+            time: data[currentIndex][0][tdId.substring(2)].time,
             lunch: 0,
-            evening: data[currentIndex][0][number].evening,
-            saturday: data[currentIndex][0][number].saturday,
-            sunday: data[currentIndex][0][number].sunday,
+            evening: data[currentIndex][0][tdId.substring(2)].evening,
+            saturday: data[currentIndex][0][tdId.substring(2)].saturday,
+            sunday: data[currentIndex][0][tdId.substring(2)].sunday,
             state: 1,
             currentIndex: currentIndex,
           };
-          fetch(`/data/${currentIndex}/${number}?currentYear=${currentYear}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(content),
-          });
+          fetch(
+            `/data/${currentIndex}/${tdId.substring(
+              2
+            )}?currentYear=${currentYear}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(content),
+            }
+          );
         });
     }
   }
@@ -1458,7 +1436,6 @@ function holyShift(event) {
   if (holyActive === true) {
     let tdId = event.target.id;
     let td = document.getElementById(tdId).classList;
-    number = parseInt(tdId.match(/\d+/)[0]);
 
     if (td == "off") {
       let content = {
