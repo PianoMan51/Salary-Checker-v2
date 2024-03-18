@@ -12,6 +12,11 @@
 </head>
 
 <body>
+    <div id="banner">
+        <button class="banner_button" style="background-color: var(--red);"></button>
+        <button class="banner_button" style="background-color: var(--yellow);"></button>
+        <button class="banner_button" style="background-color: var(--green);"></button>
+    </div>
     <div id="wrapper">
         <div class="nav">
             <div id="nav_pages">
@@ -686,12 +691,12 @@
                                     <h3 style="background-color: var(--moneygreen);"><i
                                             class="fa-solid fa-dollar-sign fa-2xl"></i></h3>
                                     <div class="paysheet_stats paysheetRight">
-                                        <span>Gennemsnit timeløn:</span>
-                                        <span id="averageHourRate"></span>
-                                    </div>
-                                    <div class="paysheet_stats paysheetRight">
                                         <span>Gennemsnit udbetaling</span>
                                         <span id="averageUdbetaling"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Gennemsnit timeløn:</span>
+                                        <span id="averageHourRate"></span>
                                     </div>
                                     <div class="paysheet_stats paysheetRight">
                                         <span>Indeks udb sidste måned:</span>
@@ -773,7 +778,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
     <script src="script.js"></script>
 
