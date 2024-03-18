@@ -1001,6 +1001,9 @@ body {
   background-color: white;
   border-radius: 15px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 #paysheetRightContent {
@@ -1009,8 +1012,8 @@ body {
   gap: 20px;
   height: 90%;
   padding: 10px;
-  margin-right: auto;
-  margin-left: auto;
+  cursor: default;
+  height: 100%;
 }
 
 #paysheetRightContent h3 {
@@ -1018,9 +1021,21 @@ body {
   font-weight: bold;
   font-size: 16px;
   text-align: center;
+  padding: 20px 10px;
+  border-radius: 10px;
+  color: white;
+  margin: 0px;
 }
 
-.accumulated {
+.paysheetRight_section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 50%;
+  gap: 10px;
+}
+
+.paysheetRight {
   display: flex;
   flex-direction: row;
   justify-content: space-between;

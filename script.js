@@ -872,6 +872,8 @@ async function updatePaysheet() {
       paysheetRatesData[currentIndex][2].opsparet_fritvalgsaftale_sats;
     personbidrag_sats.value =
       paysheetRatesData[currentIndex][2].personbidrag_sats;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
     let accumulatedFritvalgskonto =
       +paysheetRatesData[0][2].opsparet_fritvalgsaftale_beløb;
     let accumulatedPersonalerabat =
@@ -917,8 +919,20 @@ async function updatePaysheet() {
         "$" + (accumulatedFeriepenge * 0.82 * 0.62).toFixed(2);
     });
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
     let dataResponse = await fetch(`/data?currentYear=${currentYear}`);
     let data = await dataResponse.json();
+
+    let averageHourRateSpan = document.getElementById("averageHourRate");
+    let averageUdbetalingSpan = document.getElementById("averageUdbetaling");
+    let comparedLastMonthSpan = document.getElementById("comparedLastMonth");
+    let indexAveragePaySpan = document.getElementById("indexAverageUdbetaling");
+    let averageNormalTimeSpan = document.getElementById("averageNormalTime");
+    let indexAverageNormalTimeSpan = document.getElementById(
+      "indexAverageNormalTime"
+    );
+    let extraRatioSpan = document.getElementById("extraRatio");
+    let averageExtraRatioSpan = document.getElementById("averageExtraRatio");
 
     let circleData1 = document.querySelector("#normalTime");
     let circleData2 = document.querySelector("#eveningTime");
@@ -929,6 +943,8 @@ async function updatePaysheet() {
     let saturdayTime = 0;
     let sundayTime = 0;
     let sickTime = 0;
+    let extraTime = 0;
+
     for (let i = 0; i < data[currentIndex][0].length; i++) {
       if (data[currentIndex][0][i] !== null) {
         if (
@@ -945,16 +961,107 @@ async function updatePaysheet() {
         saturdayTime += data[currentIndex][0][i].saturday;
         sundayTime += data[currentIndex][0][i].sunday;
       }
-
-      value1.innerHTML = (+normalTime + +sickTime).toFixed(2) + " h";
-      value2.innerHTML = eveningTime.toFixed(2) + " h";
-      value3.innerHTML = saturdayTime.toFixed(2) + " h";
-      value4.innerHTML = sundayTime.toFixed(2) + " h";
-      circleData1.innerHTML = normalTime.toFixed(2);
-      circleData2.innerHTML = eveningTime.toFixed(2);
-      circleData3.innerHTML = saturdayTime.toFixed(2);
-      circleData4.innerHTML = sundayTime.toFixed(2);
+      extraTime = +eveningTime + +saturdayTime + +sundayTime;
     }
+    let udbetalingSum = 0;
+    let normalTimeSum = 0;
+    let extraTimeSum = 0;
+
+    for (let i = 0; i < 12; i++) {
+      udbetalingSum += +data[i][2].udbetaling_beløb;
+      for (let j = 0; j < data[i][0].length; j++) {
+        if (data[i][0][j]) {
+          normalTimeSum += data[i][0][j].time;
+          extraTimeSum +=
+            +data[i][0][j].evening +
+            +data[i][0][j].saturday +
+            +data[i][0][j].sunday;
+        }
+      }
+    }
+
+    let averageUdbetaling_beløb = (udbetalingSum / 12).toFixed(2);
+    averageUdbetalingSpan.innerHTML = "$ " + averageUdbetaling_beløb;
+
+    let averageNormalTime = (normalTimeSum / 12).toFixed(2);
+    averageNormalTimeSpan.innerHTML = averageNormalTime + " h";
+
+    if (normalTime > 0) {
+      averageHourRateSpan.innerHTML =
+        "$ " +
+        (
+          paysheetRatesData[currentIndex][2].udbetaling_beløb / normalTime
+        ).toFixed(2);
+
+      let monthIndex = 0;
+      if (currentIndex > 0) {
+        monthIndex = (
+          (paysheetRatesData[currentIndex][2].udbetaling_beløb /
+            paysheetRatesData[currentIndex - 1][2].udbetaling_beløb) *
+          100
+        ).toFixed(2);
+      }
+      if (monthIndex > 100) {
+        comparedLastMonthSpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-up"></i> ` + monthIndex;
+      }
+      if (monthIndex < 100) {
+        comparedLastMonthSpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-down"></i> ` + monthIndex;
+      }
+
+      let avgIndexUdbetaling = 0;
+      avgIndexUdbetaling = (
+        (paysheetRatesData[currentIndex][2].udbetaling_beløb /
+          averageUdbetaling_beløb) *
+        100
+      ).toFixed(2);
+
+      if (avgIndexUdbetaling > 100) {
+        indexAveragePaySpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-up"></i> ` + avgIndexUdbetaling;
+      }
+      if (avgIndexUdbetaling < 100) {
+        indexAveragePaySpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-down"></i> ` + avgIndexUdbetaling;
+      }
+
+      let avgIndexNormalTime = 0;
+      avgIndexNormalTime = ((normalTime / averageNormalTime) * 100).toFixed(2);
+
+      if (avgIndexNormalTime > 100) {
+        indexAverageNormalTimeSpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-up"></i> ` + avgIndexNormalTime;
+      }
+      if (avgIndexNormalTime < 100) {
+        indexAverageNormalTimeSpan.innerHTML =
+          `<i class="fa-solid fa-arrow-trend-down"></i> ` + avgIndexNormalTime;
+      }
+
+      extraRatioSpan.innerHTML =
+        `<i class="fa-solid fa-percent"></i> ` +
+        (extraTime / normalTime).toFixed(2);
+
+      averageExtraRatioSpan.innerHTML =
+        `<i class="fa-solid fa-percent"></i> ` +
+        (extraTimeSum / normalTimeSum).toFixed(2);
+    } else {
+      averageHourRateSpan.innerHTML = "###";
+      comparedLastMonthSpan.innerHTML = "###";
+      indexAveragePaySpan.innerHTML = "###";
+      indexAverageNormalTimeSpan.innerHTML = "###";
+      extraRatioSpan.innerHTML = "###";
+      averageExtraRatioSpan.innerHTML = "###";
+    }
+
+    value1.innerHTML = (+normalTime + +sickTime).toFixed(2) + " h";
+    value2.innerHTML = eveningTime.toFixed(2) + " h";
+    value3.innerHTML = saturdayTime.toFixed(2) + " h";
+    value4.innerHTML = sundayTime.toFixed(2) + " h";
+    circleData1.innerHTML = normalTime.toFixed(2);
+    circleData2.innerHTML = eveningTime.toFixed(2);
+    circleData3.innerHTML = saturdayTime.toFixed(2);
+    circleData4.innerHTML = sundayTime.toFixed(2);
 
     let donutData = [normalTime, eveningTime, saturdayTime, sundayTime];
     donutChart.data.datasets[0].data = donutData;
@@ -1303,7 +1410,7 @@ function updateListedShifts() {
           listedShiftDiv.appendChild(listedShiftHour);
           listedShiftTimes.append(fill_after);
           listedShiftHour.innerHTML =
-            "Helligdag, " + data[currentIndex][0][i].time;
+            "Helligdag, " + data[currentIndex][0][i].time + "h";
           listedShiftDiv.style.backgroundColor = "var(--background)";
         } else {
           shiftList.appendChild(listedShiftLi);

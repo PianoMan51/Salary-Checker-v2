@@ -682,23 +682,69 @@
                     <div class="content_section right page_section">
                         <div id="paysheetRight">
                             <div id="paysheetRightContent">
-                                <h3>Akkumuleret for året</h3>
-                                <div class="accumulated">
-                                    <span>Fritvalgskonto:</span>
-                                    <span class="accum" id="accumulatedFritvalgs"></span>
+                                <div class="paysheetRight_section">
+                                    <h3 style="background-color: var(--moneygreen);"><i
+                                            class="fa-solid fa-dollar-sign fa-2xl"></i></h3>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Gennemsnit timeløn:</span>
+                                        <span id="averageHourRate"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Gennemsnit udbetaling</span>
+                                        <span id="averageUdbetaling"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Indeks udb sidste måned:</span>
+                                        <span id="comparedLastMonth"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Indeks gennemsnit udb:</span>
+                                        <span id="indexAverageUdbetaling"></span>
+                                    </div>
                                 </div>
-                                <div class="accumulated">
-                                    <span>Feriepenge total:</span>
-                                    <span class="accum" id="accumulatedFeriepenge"></span>
+                                <div class="paysheetRight_section">
+                                    <h3 style="background-color: var(--blue);"><i
+                                            class="fa-regular fa-clock fa-2xl"></i>
+                                    </h3>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Gennemsnit timer:</span>
+                                        <span id="averageNormalTime"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Indeks gennemsnit timer:</span>
+                                        <span id="indexAverageNormalTime"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Forskudttimer ratio:</span>
+                                        <span id="extraRatio"></span>
+                                    </div>
+                                    <div class="paysheet_stats paysheetRight">
+                                        <span>Gennemsnit fskt-ratio:</span>
+                                        <span id="averageExtraRatio"></span>
+                                    </div>
+
                                 </div>
-                                <div class="accumulated">
-                                    <span>Dividende total:</span>
-                                    <span class="accum" id="accumulatedPersonalerabat"></span>
+                                <div class="paysheetRight_section">
+                                    <h3 style="background-color: var(--darkyellow);"><i
+                                            class="fa-solid fa-chart-line fa-2xl"></i></h3>
+                                    <div class="accumulated paysheetRight">
+                                        <span>Fritvalgskonto pr dato:</span>
+                                        <span class="accum" id="accumulatedFritvalgs"></span>
+                                    </div>
+                                    <div class="accumulated paysheetRight">
+                                        <span>Feriepenge pr dato:</span>
+                                        <span class="accum" id="accumulatedFeriepenge"></span>
+                                    </div>
+                                    <div class="accumulated paysheetRight">
+                                        <span>Dividende pr dato:</span>
+                                        <span class="accum" id="accumulatedPersonalerabat"></span>
+                                    </div>
+                                    <div class="accumulated paysheetRight">
+                                        <span>Udbetalt pr dato:</span>
+                                        <span class="accum" id="accumulatedUdbetaling"></span>
+                                    </div>
                                 </div>
-                                <div class="accumulated">
-                                    <span>Udbetalt total:</span>
-                                    <span class="accum" id="accumulatedUdbetaling"></span>
-                                </div>
+
                             </div>
                         </div>
 
