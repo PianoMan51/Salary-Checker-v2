@@ -151,6 +151,13 @@ document.addEventListener("DOMContentLoaded", () => {
   page.style.display = "flex";
   if (pageId == "page_nav4") {
     loadTotalData();
+    paysheet_stats("udbetaling");
+    let buttons = document.querySelectorAll(".table_btn");
+    buttons.forEach((b) => {
+      b.addEventListener("click", function () {
+        paysheet_stats(b.classList[1]);
+      });
+    });
   }
 });
 
@@ -1268,6 +1275,7 @@ async function loadTotalData() {
       }
       overallChartData.push(yearTotal);
       updateTotalChart(overallChartData);
+      updatePaysheet_donut_left(overallChartData);
     }
   } catch (error) {
     alert("No data available.");
@@ -1289,6 +1297,11 @@ function updateYearChart(yearChartData, yearChartSalary) {
 function updateTotalChart(totalChartData) {
   totalChart.data.datasets[0].data = totalChartData;
   totalChart.update();
+}
+
+function updatePaysheet_donut_left(totalChartData) {
+  paysheet_donut_left.data.datasets[0].data = totalChartData;
+  paysheet_donut_left.update();
 }
 
 function updateListedShifts() {
@@ -1584,6 +1597,172 @@ function holyShift(event) {
   }
 }
 
+function paysheet_stats(cat) {
+  let stats_table = document.getElementById("stats_right_table_top");
+  stats_table.innerHTML = "";
+  fetch("fileCount")
+    .then((response) => response.json())
+    .then((data) => {
+      for (let i = 0; i < data.count; i++) {
+        let tr = document.createElement("tr");
+        let year_val = 0;
+        for (let j = 0; j < 15; j++) {
+          if (i > 0) {
+            let td = document.createElement("td");
+            if (j > 0) {
+              let month_val = 0;
+              let extraTimeSum = 0;
+              let hoursTimeSum = 0;
+              let year = 2018 + i;
+              if (cat == "udbetaling") {
+                fetch(`/paysheetRates?currentYear=${year}`)
+                  .then((response) => response.json())
+                  .then((paysheetRates) => {
+                    if (paysheetRates[j - 1]) {
+                      month_val = paysheetRates[j - 1][2].udbetaling_beløb;
+                      year_val += +month_val;
+                      td.innerHTML = Math.trunc(month_val);
+                    }
+                    if (j == 13) {
+                      td.innerHTML = Math.trunc(year_val);
+                    }
+                    if (j == 14) {
+                      td.innerHTML = Math.trunc(year_val / 12);
+                    }
+                  });
+              }
+              if (cat == "personalerabat") {
+                fetch(`/paysheetRates?currentYear=${year}`)
+                  .then((response) => response.json())
+                  .then((paysheetRates) => {
+                    if (paysheetRates[j - 1]) {
+                      month_val = paysheetRates[j - 1][2].personalerabat_beløb;
+                      year_val += +month_val;
+                      td.innerHTML = Math.trunc(month_val);
+                    }
+                    if (j == 13) {
+                      td.innerHTML = Math.trunc(year_val);
+                    }
+                    if (j == 14) {
+                      td.innerHTML = Math.trunc(year_val / 12);
+                    }
+                  });
+              }
+              if (cat == "hours") {
+                fetch(`/data?currentYear=${year}`)
+                  .then((response) => response.json())
+                  .then((hours) => {
+                    if (hours[j - 1]) {
+                      for (let k = 0; k < hours[j - 1][0].length; k++) {
+                        if (hours[j - 1][0][k]) {
+                          month_val += hours[j - 1][0][k].time;
+                        }
+                        td.innerHTML = month_val;
+                      }
+                      year_val += +month_val;
+                    }
+                    if (j == 13) {
+                      td.innerHTML = Math.trunc(year_val);
+                    }
+                    if (j == 14) {
+                      td.innerHTML = Math.trunc(year_val / 12);
+                    }
+                  });
+              }
+              if (cat == "ratio") {
+                fetch(`/data?currentYear=${year}`)
+                  .then((response) => response.json())
+                  .then((ratio) => {
+                    if (ratio[j - 1]) {
+                      for (let k = 0; k < ratio[j - 1][0].length; k++) {
+                        if (ratio[j - 1][0][k]) {
+                          hoursTimeSum += ratio[j - 1][0][k].time;
+                          extraTimeSum +=
+                            +ratio[j - 1][0][k].evening +
+                            +ratio[j - 1][0][k].saturday +
+                            +ratio[j - 1][0][k].sunday;
+                          month_val = extraTimeSum / hoursTimeSum;
+                          td.innerHTML = month_val.toFixed(2);
+                        }
+                      }
+                      year_val += +month_val;
+                    }
+                    if (j == 13) {
+                      td.innerHTML = year_val.toFixed(2);
+                    }
+                    if (j == 14) {
+                      td.innerHTML = (year_val / 12).toFixed(2);
+                    }
+                  });
+              }
+              if (cat == "shifts") {
+                fetch(`/data?currentYear=${year}`)
+                  .then((response) => response.json())
+                  .then((hours) => {
+                    if (hours[j - 1]) {
+                      for (let k = 0; k < hours[j - 1][0].length; k++) {
+                        if (hours[j - 1][0][k] !== null) {
+                          month_val++;
+                        }
+                        td.innerHTML = month_val;
+                      }
+                      year_val += +month_val;
+                    }
+                    if (j == 13) {
+                      td.innerHTML = Math.trunc(year_val);
+                    }
+                    if (j == 14) {
+                      td.innerHTML = Math.trunc(year_val / 12);
+                    }
+                  });
+              }
+              if (j < 13) {
+                td.classList.add("table_td");
+              }
+              if (j == 13) {
+                td.innerHTML = Math.trunc(year_val);
+                td.classList.add("table_sum_avg");
+              }
+              if (j == 14) {
+                td.innerHTML = Math.trunc(year_val / 12);
+                td.classList.add("table_sum_avg");
+              }
+            } else {
+              td.innerHTML = 18 + i + "'";
+              td.classList.add("table_th");
+            }
+            tr.appendChild(td);
+          } else {
+            let td = document.createElement("td");
+            if (j > 0) {
+              if (monthNames[j - 1]) {
+                td.innerHTML = monthNames[j - 1]
+                  .substring(0, 3)
+                  .toLocaleUpperCase();
+                td.classList.add("table_th");
+              }
+              if (j == 13) {
+                td.innerHTML = "SUM";
+                td.style.textAlign = "center";
+                td.classList.add("table_sum_avg");
+              }
+              if (j == 14) {
+                td.innerHTML = "AVG";
+                td.style.textAlign = "center";
+                td.classList.add("table_sum_avg");
+              }
+            } else if (j == 0) {
+              td.innerHTML = "";
+            }
+            tr.appendChild(td);
+          }
+        }
+
+        stats_table.append(tr);
+      }
+    });
+}
+
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
   data: {
@@ -1777,10 +1956,43 @@ let totalChart = new Chart("progress_total", {
   },
 });
 
+let paysheet_donut_left = new Chart("paysheet_donut_left", {
+  type: "doughnut",
+  data: {
+    labels: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [
+          "#3498db",
+          "#2c3e50",
+          "#f39c12",
+          "#c0392b",
+          "#2ecc71",
+        ],
+        borderRadius: 10,
+      },
+    ],
+  },
+  options: {
+    borderWidth: 3,
+    cutout: 90,
+    legend: {
+      display: false, // Hide legend
+    },
+    plugins: {
+      datalabels: {
+        display: false, // Hide labels
+      },
+    },
+  },
+});
+
 donutChart.update();
 monthChart.update();
 yearChart.update();
 totalChart.update();
+paysheet_donut_left.update();
 loadCell();
 updatePaysheet();
 changeMonth();

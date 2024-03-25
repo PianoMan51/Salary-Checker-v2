@@ -239,7 +239,7 @@ body {
 #listedShiftDay {
   width: 40px;
   padding: 14px 20px;
-  background-color: var(--darkblue);
+  background-color: var(--background);
   color: white;
   border-radius: 10px;
   text-align: center;
@@ -617,6 +617,92 @@ body {
   height: 300px;
 }
 
+#stats_right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#stats_right h3 {
+  text-align: center;
+}
+
+#stats_right_table_top {
+  margin: 0px auto 0px auto;
+  padding: 10px;
+  border-radius: 10px;
+  width: 100%;
+  border-spacing: 5px;
+}
+
+#stats_right_table_top td {
+  font-size: 12px;
+  cursor: default;
+  transform: scale(1);
+  transition: all 0.8s;
+}
+
+#stats_right_table_top td:hover {
+  transform: scale(1.2);
+  transition: all 0.2s;
+}
+
+#stats_right_table_top_buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0px auto 0px auto;
+}
+
+.table_btn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  width: 80px;
+  cursor: pointer;
+  color: white;
+  background-color: var(--blue);
+}
+
+.table_th {
+  background-color: var(--darkergray);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.table_td {
+  background-color: var(--lightgray);
+  color: var(--darkbackground);
+  font-weight: bolder;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.table_td:hover {
+  background-color: var(--green);
+}
+
+.table_sum_avg {
+  background-color: var(--darkestgray);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+#paysheet_donut_left_container {
+  width: 300px;
+}
+
+.stats_right_section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 50%;
+}
+
 /* ///////////////////////// */
 
 #labels {
@@ -720,7 +806,7 @@ body {
 .sick,
 .holy {
   transform: scale(1);
-  transition: all ease 0.2s;
+  transition: all ease 0.6s;
 }
 
 .on:hover,
