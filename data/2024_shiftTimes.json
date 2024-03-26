@@ -374,11 +374,11 @@
       },
       {
         "start": "13:00",
-        "end": "21:00",
-        "time": 7.25,
+        "end": "20:15",
+        "time": 6.5,
         "lunch": 0.75,
         "evening": 0,
-        "saturday": 5.25,
+        "saturday": 4.5,
         "sunday": 0,
         "state": 0
       },
@@ -392,20 +392,6 @@
         "sunday": 7.5,
         "state": 0
       },
-      {
-        "start": "16:00",
-        "end": "21:15",
-        "time": 4.75,
-        "lunch": 0.5,
-        "evening": 2.75,
-        "saturday": 0,
-        "sunday": 0,
-        "state": 0
-      },
-      null,
-      null,
-      null,
-      null,
       null,
       null,
       {
@@ -422,8 +408,6 @@
       null,
       null,
       null,
-      null,
-      null,
       {
         "start": "16:00",
         "end": "21:15",
@@ -434,6 +418,13 @@
         "sunday": 0,
         "state": 0
       },
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       null,
       null,
       null,
@@ -467,20 +458,29 @@
       "personalerabat_beløb": "0.00",
       "udbetalingFritvalgs_beløb": "0.00",
       "udbetalingFeriepenge_beløb": "0.00",
-      "udbetaling_beløb": "4471.98",
-      "arbejdsmarkedsbidrag_grundlag": "7875.14",
+      "udbetaling_beløb": "4074.02",
+      "arbejdsmarkedsbidrag_grundlag": "7177.46",
       "ATP_beløb": "-31.55",
-      "PFA_beløb": "-173.81",
-      "arbejdsmarkedsbidrag_beløb": "-630.01",
-      "askat_beløb": "-2753.15",
-      "opsparet_fritvalgsaftale_beløb": "565.64",
-      "opsparet_feriepenge_beløb": "1010.06"
+      "PFA_beløb": "-158.47",
+      "arbejdsmarkedsbidrag_beløb": "-574.20",
+      "askat_beløb": "-2509.24",
+      "opsparet_fritvalgsaftale_beløb": "515.72",
+      "opsparet_feriepenge_beløb": "920.93"
     }
   ],
   [
     [
       null,
-      null,
+      {
+        "start": "16:00",
+        "end": "21:15",
+        "time": 4.75,
+        "lunch": 0.5,
+        "evening": 2.75,
+        "saturday": 0,
+        "sunday": 0,
+        "state": 0
+      },
       null,
       null,
       {

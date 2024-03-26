@@ -13,6 +13,7 @@ let quickSelects = document.getElementById("quickSelects");
 let currentIndex = localStorage.getItem("currentIndex") || 0;
 let currentMonthSpan = document.getElementById("currentMonth");
 let currentYear = localStorage.getItem("currentYear") || 2024;
+let currentStatIndex = 0;
 let allCalendarButtons = document.querySelectorAll(".calendar_button");
 let allCalendarDots = document.querySelectorAll(".calendar_dot");
 let bottomButton = document.getElementById("bottomButton");
@@ -66,6 +67,7 @@ let monthNames = [
   "November",
   "December",
 ];
+let statCategories = ["Udbetalt", "Dividende", "Fritvalgskonto", "Sygedage"];
 
 deleteButton.addEventListener("click", () => {
   deleteActive = !deleteActive;
@@ -151,13 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
   page.style.display = "flex";
   if (pageId == "page_nav4") {
     loadTotalData();
-    paysheet_stats("udbetaling");
-    let buttons = document.querySelectorAll(".table_btn");
-    buttons.forEach((b) => {
-      b.addEventListener("click", function () {
-        paysheet_stats(b.classList[1]);
-      });
-    });
   }
 });
 
@@ -1513,13 +1508,6 @@ function editShift(event) {
       });
 
       editShiftSection.style.display = "none";
-      /* editData1.value = "";
-      editData2.value = "";
-      editData3.value = "";
-      editData4.value = "";
-      editData5.value = "";
-      editData6.value = "";
-      editData7.value = ""; */
 
       td.add("on");
       td.remove("beingEdit");
@@ -1597,125 +1585,19 @@ function holyShift(event) {
   }
 }
 
-function paysheet_stats(cat) {
+function createPaysheet_stats() {
   let stats_table = document.getElementById("stats_right_table_top");
-  stats_table.innerHTML = "";
+
   fetch("fileCount")
     .then((response) => response.json())
     .then((data) => {
-      for (let i = 0; i < data.count; i++) {
+      for (let i = 0; i < data.count + 1; i++) {
         let tr = document.createElement("tr");
         let year_val = 0;
         for (let j = 0; j < 15; j++) {
           if (i > 0) {
             let td = document.createElement("td");
             if (j > 0) {
-              let month_val = 0;
-              let extraTimeSum = 0;
-              let hoursTimeSum = 0;
-              let year = 2018 + i;
-              if (cat == "udbetaling") {
-                fetch(`/paysheetRates?currentYear=${year}`)
-                  .then((response) => response.json())
-                  .then((paysheetRates) => {
-                    if (paysheetRates[j - 1]) {
-                      month_val = paysheetRates[j - 1][2].udbetaling_beløb;
-                      year_val += +month_val;
-                      td.innerHTML = Math.trunc(month_val);
-                    }
-                    if (j == 13) {
-                      td.innerHTML = Math.trunc(year_val);
-                    }
-                    if (j == 14) {
-                      td.innerHTML = Math.trunc(year_val / 12);
-                    }
-                  });
-              }
-              if (cat == "personalerabat") {
-                fetch(`/paysheetRates?currentYear=${year}`)
-                  .then((response) => response.json())
-                  .then((paysheetRates) => {
-                    if (paysheetRates[j - 1]) {
-                      month_val = paysheetRates[j - 1][2].personalerabat_beløb;
-                      year_val += +month_val;
-                      td.innerHTML = Math.trunc(month_val);
-                    }
-                    if (j == 13) {
-                      td.innerHTML = Math.trunc(year_val);
-                    }
-                    if (j == 14) {
-                      td.innerHTML = Math.trunc(year_val / 12);
-                    }
-                  });
-              }
-              if (cat == "hours") {
-                fetch(`/data?currentYear=${year}`)
-                  .then((response) => response.json())
-                  .then((hours) => {
-                    if (hours[j - 1]) {
-                      for (let k = 0; k < hours[j - 1][0].length; k++) {
-                        if (hours[j - 1][0][k]) {
-                          month_val += hours[j - 1][0][k].time;
-                        }
-                        td.innerHTML = month_val;
-                      }
-                      year_val += +month_val;
-                    }
-                    if (j == 13) {
-                      td.innerHTML = Math.trunc(year_val);
-                    }
-                    if (j == 14) {
-                      td.innerHTML = Math.trunc(year_val / 12);
-                    }
-                  });
-              }
-              if (cat == "ratio") {
-                fetch(`/data?currentYear=${year}`)
-                  .then((response) => response.json())
-                  .then((ratio) => {
-                    if (ratio[j - 1]) {
-                      for (let k = 0; k < ratio[j - 1][0].length; k++) {
-                        if (ratio[j - 1][0][k]) {
-                          hoursTimeSum += ratio[j - 1][0][k].time;
-                          extraTimeSum +=
-                            +ratio[j - 1][0][k].evening +
-                            +ratio[j - 1][0][k].saturday +
-                            +ratio[j - 1][0][k].sunday;
-                          month_val = extraTimeSum / hoursTimeSum;
-                          td.innerHTML = month_val.toFixed(2);
-                        }
-                      }
-                      year_val += +month_val;
-                    }
-                    if (j == 13) {
-                      td.innerHTML = year_val.toFixed(2);
-                    }
-                    if (j == 14) {
-                      td.innerHTML = (year_val / 12).toFixed(2);
-                    }
-                  });
-              }
-              if (cat == "shifts") {
-                fetch(`/data?currentYear=${year}`)
-                  .then((response) => response.json())
-                  .then((hours) => {
-                    if (hours[j - 1]) {
-                      for (let k = 0; k < hours[j - 1][0].length; k++) {
-                        if (hours[j - 1][0][k] !== null) {
-                          month_val++;
-                        }
-                        td.innerHTML = month_val;
-                      }
-                      year_val += +month_val;
-                    }
-                    if (j == 13) {
-                      td.innerHTML = Math.trunc(year_val);
-                    }
-                    if (j == 14) {
-                      td.innerHTML = Math.trunc(year_val / 12);
-                    }
-                  });
-              }
               if (j < 13) {
                 td.classList.add("table_td");
               }
@@ -1728,8 +1610,9 @@ function paysheet_stats(cat) {
                 td.classList.add("table_sum_avg");
               }
             } else {
-              td.innerHTML = 18 + i + "'";
+              td.innerHTML = 18 + i - 1 + "'";
               td.classList.add("table_th");
+              td.classList.add("table_year");
             }
             tr.appendChild(td);
           } else {
@@ -1757,10 +1640,123 @@ function paysheet_stats(cat) {
             tr.appendChild(td);
           }
         }
-
         stats_table.append(tr);
       }
+      let total_row = document.createElement("tr");
+      for (let j = 0; j < 15; j++) {
+        let td = document.createElement("td");
+        if (j > 0) {
+          if (j < 13) {
+            td.classList.add("table_td");
+          }
+          if (j == 13 || j == 14) {
+            td.classList.add("table_th");
+          }
+        } else {
+          td.classList.add("table_th");
+          td.innerHTML = "TOT";
+        }
+        total_row.append(td);
+      }
+      stats_table.append(total_row);
+      updatePayheet_stats("Udbetalt");
     });
+}
+
+function currentStat(direction) {
+  if (direction == "prev") {
+    if (currentStatIndex > 0) {
+      currentStatIndex--;
+      updatePayheet_stats(statCategories[currentStatIndex]);
+    }
+  }
+  if (direction == "next") {
+    if (currentStatIndex < statCategories.length - 1) {
+      currentStatIndex++;
+      updatePayheet_stats(statCategories[currentStatIndex]);
+    }
+  }
+  document.getElementById("currentStats").innerHTML =
+    statCategories[currentStatIndex];
+}
+
+function updatePayheet_stats(category) {
+  let table = document.getElementById("stats_right_table_top");
+  let columnSums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  for (let i = 0; i < table.childNodes.length; i++) {
+    let year = 2018 + i;
+    let month_val = 0;
+    let year_val = 0;
+    if (category === "Udbetalt") {
+      if (i > 0 && i < table.childNodes.length - 2) {
+        fetch(`/paysheetRates?currentYear=${year - 1}`)
+          .then((response) => response.json())
+          .then((paysheetRates) => {
+            for (let j = 0; j < 15; j++) {
+              let tds = table.children[i].children[j];
+              if (j > 0 && j < 13) {
+                month_val = paysheetRates[j - 1][2].udbetaling_beløb;
+                year_val += +month_val;
+                columnSums[j - 1] += Math.trunc(+month_val);
+                tds.innerHTML = Math.trunc(month_val);
+              }
+              if (j == 13) {
+                tds.innerHTML = Math.trunc(year_val);
+              }
+              if (j == 14) {
+                tds.innerHTML = Math.trunc(year_val / 12);
+              }
+            }
+          });
+      }
+    }
+    if (category === "Dividende") {
+      if (i > 0 && i < table.childNodes.length - 2) {
+        fetch(`/paysheetRates?currentYear=${year - 1}`)
+          .then((response) => response.json())
+          .then((paysheetRates) => {
+            for (let j = 0; j < 15; j++) {
+              let tds = table.children[i].children[j];
+              if (j > 0 && j < 13) {
+                month_val = paysheetRates[j - 1][2].personalerabat_beløb;
+                year_val += +month_val;
+                columnSums[j - 1] += Math.trunc(+month_val);
+                tds.innerHTML = Math.trunc(month_val);
+              }
+              if (j == 13) {
+                tds.innerHTML = Math.trunc(year_val);
+              }
+              if (j == 14) {
+                tds.innerHTML = Math.trunc(year_val / 12);
+              }
+            }
+          });
+      }
+    }
+    if (category === "Fritvalgskonto") {
+      if (i > 0 && i < table.childNodes.length - 2) {
+        fetch(`/paysheetRates?currentYear=${year - 1}`)
+          .then((response) => response.json())
+          .then((paysheetRates) => {
+            for (let j = 0; j < 15; j++) {
+              let tds = table.children[i].children[j];
+              if (j > 0 && j < 13) {
+                month_val = paysheetRates[j - 1][2].udbetalingFritvalgs_beløb;
+                year_val += +month_val;
+                columnSums[j - 1] += Math.trunc(+month_val);
+                tds.innerHTML = Math.trunc(month_val);
+              }
+              if (j == 13) {
+                tds.innerHTML = Math.trunc(year_val);
+              }
+              if (j == 14) {
+                tds.innerHTML = Math.trunc(year_val / 12);
+              }
+            }
+          });
+      }
+    }
+  }
 }
 
 let donutChart = new Chart("progress_circle", {
@@ -1997,3 +1993,4 @@ loadCell();
 updatePaysheet();
 changeMonth();
 createYearButtons();
+createPaysheet_stats();

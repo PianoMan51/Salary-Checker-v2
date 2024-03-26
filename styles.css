@@ -630,14 +630,14 @@ body {
 
 #stats_right_table_top {
   margin: 0px auto 0px auto;
-  padding: 10px;
+  padding: 5px;
   border-radius: 10px;
   width: 100%;
   border-spacing: 5px;
 }
 
 #stats_right_table_top td {
-  font-size: 12px;
+  font-size: 11px;
   cursor: default;
   transform: scale(1);
   transition: all 0.8s;
@@ -665,6 +665,10 @@ body {
   background-color: var(--blue);
 }
 
+.table_th.table_year {
+  width: 14px;
+}
+
 .table_th {
   background-color: var(--darkergray);
   color: white;
@@ -685,11 +689,17 @@ body {
   background-color: var(--green);
 }
 
+#currentStats {
+  width: 150px;
+  text-align: center;
+}
+
 .table_sum_avg {
   background-color: var(--darkestgray);
   color: white;
   padding: 5px;
   border-radius: 5px;
+  width: 40px;
 }
 
 #paysheet_donut_left_container {
@@ -944,6 +954,7 @@ body {
   margin-left: 10px;
   border-radius: 50%;
   border: none;
+  padding: 0px;
   background-color: var(--darkbackground);
   color: white;
   transform: scale(1);
