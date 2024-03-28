@@ -67,7 +67,13 @@ let monthNames = [
   "November",
   "December",
 ];
-let statCategories = ["Udbetalt", "Dividende", "Fritvalgskonto", "Sygedage"];
+let statCategories = [
+  "Udbetalt",
+  "Timer",
+  "Dividende",
+  "Fritvalgskonto",
+  "Sygedage",
+];
 
 deleteButton.addEventListener("click", () => {
   deleteActive = !deleteActive;
@@ -1742,6 +1748,68 @@ function updatePayheet_stats(category) {
               let tds = table.children[i].children[j];
               if (j > 0 && j < 13) {
                 month_val = paysheetRates[j - 1][2].udbetalingFritvalgs_beløb;
+                year_val += +month_val;
+                columnSums[j - 1] += Math.trunc(+month_val);
+                tds.innerHTML = Math.trunc(month_val);
+              }
+              if (j == 13) {
+                tds.innerHTML = Math.trunc(year_val);
+              }
+              if (j == 14) {
+                tds.innerHTML = Math.trunc(year_val / 12);
+              }
+            }
+          });
+      }
+    }
+    if (category === "Timer") {
+      if (i > 0 && i < table.childNodes.length - 2) {
+        fetch(`/data?currentYear=${year - 1}`)
+          .then((response) => response.json())
+          .then((data) => {
+            for (let j = 0; j < 15; j++) {
+              let tds = table.children[i].children[j];
+              if (j > 0 && j < 13) {
+                let hours = 0;
+                for (let k = 0; k < data[j - 1][0].length; k++) {
+                  if (data[j - 1][0][k]) {
+                    hours += data[j - 1][0][k].time;
+                  }
+                }
+                month_val = hours;
+
+                year_val += +month_val;
+                columnSums[j - 1] += Math.trunc(+month_val);
+                tds.innerHTML = Math.trunc(month_val);
+              }
+              if (j == 13) {
+                tds.innerHTML = Math.trunc(year_val);
+              }
+              if (j == 14) {
+                tds.innerHTML = Math.trunc(year_val / 12);
+              }
+            }
+          });
+      }
+    }
+    if (category === "Sygedage") {
+      if (i > 0 && i < table.childNodes.length - 2) {
+        fetch(`/data?currentYear=${year - 1}`)
+          .then((response) => response.json())
+          .then((data) => {
+            for (let j = 0; j < 15; j++) {
+              let tds = table.children[i].children[j];
+              if (j > 0 && j < 13) {
+                let sygedage = 0;
+                for (let k = 0; k < data[j - 1][0].length; k++) {
+                  if (data[j - 1][0][k]) {
+                    if (data[j - 1][0][k].state == 1) {
+                      sygedage++;
+                    }
+                  }
+                }
+                month_val = sygedage;
+
                 year_val += +month_val;
                 columnSums[j - 1] += Math.trunc(+month_val);
                 tds.innerHTML = Math.trunc(month_val);

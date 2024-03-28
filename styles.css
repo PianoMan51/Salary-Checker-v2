@@ -595,9 +595,12 @@ body {
 
 /* /////////PAGE4/////////// */
 
-#page_nav4 .left,
+#page_nav4 .left {
+  width: 45%;
+}
+
 #page_nav4 .right {
-  width: 50%;
+  width: 55%;
 }
 
 #page_nav4 .white_section_left {
@@ -683,6 +686,7 @@ body {
   font-weight: bolder;
   padding: 5px;
   border-radius: 5px;
+  width: 40px;
 }
 
 .table_td:hover {
@@ -692,6 +696,30 @@ body {
 #currentStats {
   width: 150px;
   text-align: center;
+}
+
+.stats_table_button {
+  border: none;
+  background-color: var(--blue);
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: scale(1);
+  transition: 0.4s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats_table_button:hover {
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+.stats_table_button:active {
+  transform: scale(1.2);
+  transition: 0.1s;
 }
 
 .table_sum_avg {
