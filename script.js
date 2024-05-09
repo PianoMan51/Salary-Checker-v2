@@ -663,7 +663,7 @@ Array.from(tdElements).forEach((td) => {
         .then((response) => response.json())
         .then((data) => {
           td.innerHTML =
-            data[currentIndex][0][tdId.substring(2)].time.toFixed(2) + "h";
+            data[currentIndex][0][tdId.substring(2)].time.toFixed(2) + " h";
         });
     }
   });
@@ -682,7 +682,7 @@ Array.from(tdElements).forEach((td) => {
       fetch(`/data?currentYear=${currentYear}`)
         .then((response) => response.json())
         .then((data) => {
-          td.innerHTML = data[currentIndex][0][td.id.substring(2)].time + "h";
+          td.innerHTML = data[currentIndex][0][td.id.substring(2)].time + " h";
           td.style.fontSize = "16px";
         });
     }
@@ -1361,7 +1361,7 @@ function updateListedShifts() {
           (data[currentIndex][0][i] && data[currentIndex][0][i].state == 0) ||
           (data[currentIndex][0][i] && data[currentIndex][0][i].state == 1)
         ) {
-          listedShiftHour.innerHTML = data[currentIndex][0][i].time + "h";
+          listedShiftHour.innerHTML = data[currentIndex][0][i].time + " h";
           listedShiftStart.innerHTML = data[currentIndex][0][i].start;
           listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
 
@@ -1402,7 +1402,7 @@ function updateListedShifts() {
             listedShiftStart.innerHTML = "";
             listedShiftEnd.innerHTML = "Sick";
             listedShiftDiv.addEventListener("mouseover", function () {
-              listedShiftHour.innerHTML = data[currentIndex][0][i].time + "h";
+              listedShiftHour.innerHTML = data[currentIndex][0][i].time + " h";
               listedShiftStart.innerHTML = data[currentIndex][0][i].start;
               listedShiftEnd.innerHTML = data[currentIndex][0][i].end;
             });
@@ -1424,7 +1424,7 @@ function updateListedShifts() {
           listedShiftDiv.appendChild(listedShiftHour);
           listedShiftTimes.append(fill_after);
           listedShiftHour.innerHTML =
-            "Helligdag, " + data[currentIndex][0][i].time + "h";
+            "Helligdag, " + data[currentIndex][0][i].time + " h";
           listedShiftDiv.style.backgroundColor = "var(--background)";
         } else {
           shiftList.appendChild(listedShiftLi);
@@ -1830,6 +1830,7 @@ function updatePayheet_stats(category) {
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
   data: {
+    labels: ["Normal", "Evening", "Saturday", "Sunday"],
     datasets: [
       {
         data: [],
@@ -1842,6 +1843,23 @@ let donutChart = new Chart("progress_circle", {
     borderRadius: 15,
     onHover: { mode: null },
     cutout: 90,
+    plugins: {
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            let value = tooltipItem.raw;
+            return value + " hours";
+          },
+        },
+        labels: {
+          display: false,
+        },
+      },
+      legend: {
+        display: false,
+      },
+    },
   },
 });
 
@@ -1911,6 +1929,15 @@ let monthChart = new Chart("progress_month", {
       legend: {
         display: false,
       },
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            let value = tooltipItem.raw;
+            return value + " hours";
+          },
+        },
+      },
     },
     responsive: true,
     maintainAspectRatio: false,
@@ -1918,38 +1945,49 @@ let monthChart = new Chart("progress_month", {
 });
 
 let yearChart = new Chart("progress_year", {
-  type: "bar",
+  type: "line",
   data: {
     labels: [
-      "JAN",
-      "FEB",
-      "MAR",
-      "APR",
-      "MAY",
-      "JUN",
-      "JUL",
-      "AUG",
-      "SEP",
-      "OCT",
-      "NOV",
-      "DEC",
+      "January",
+      "Febuary",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "Septemper",
+      "October",
+      "November",
+      "December",
     ],
     datasets: [
       {
         data: [],
         backgroundColor: "#3498db",
+        borderColor: "#3498db",
         borderRadius: 10,
         yAxisID: "y",
+        label: "Hours",
+        tension: 0.1,
+        pointRadius: 0,
+        borderWidth: 5,
       },
       {
         data: [],
         backgroundColor: "#4cd137",
+        borderColor: "#4cd137",
         borderRadius: 10,
         yAxisID: "y1",
+        tension: 0.1,
+        pointRadius: 0,
+        borderWidth: 5,
       },
     ],
   },
   options: {
+    hoverRadius: 12,
+    hitRadius: 30,
     scales: {
       y: {
         type: "linear",
@@ -1959,6 +1997,11 @@ let yearChart = new Chart("progress_year", {
         position: "left",
         grid: {
           display: false,
+        },
+        ticks: {
+          callback: function (value) {
+            return value + "h";
+          },
         },
       },
       y1: {
@@ -1970,6 +2013,11 @@ let yearChart = new Chart("progress_year", {
         grid: {
           display: false,
         },
+        ticks: {
+          callback: function (value) {
+            return "$" + value;
+          },
+        },
       },
       x: {
         grid: {
@@ -1980,6 +2028,23 @@ let yearChart = new Chart("progress_year", {
     plugins: {
       legend: {
         display: false,
+      },
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            let datasetIndex = tooltipItem.datasetIndex;
+            let value = tooltipItem.raw;
+
+            if (datasetIndex === 0) {
+              return value + " hours";
+            } else if (datasetIndex === 1) {
+              return "$" + value;
+            }
+
+            return value;
+          },
+        },
       },
     },
     responsive: true,
@@ -2006,13 +2071,22 @@ let totalChart = new Chart("progress_total", {
       },
       x: {
         grid: {
-          display: true,
+          display: false,
         },
       },
     },
     plugins: {
       legend: {
         display: false,
+      },
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            let value = tooltipItem.raw;
+            return value + " hours";
+          },
+        },
       },
     },
     responsive: true,
