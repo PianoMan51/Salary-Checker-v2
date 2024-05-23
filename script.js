@@ -1693,6 +1693,7 @@ function updatePayheet_stats(category) {
     let year = 2018 + i;
     let month_val = 0;
     let year_val = 0;
+
     if (category === "Udbetalt") {
       if (i > 0 && i < table.childNodes.length - 2) {
         fetch(`/paysheetRates?currentYear=${year - 1}`)
@@ -1827,6 +1828,7 @@ function updatePayheet_stats(category) {
   }
 }
 
+//Home
 let donutChart = new Chart("progress_circle", {
   type: "doughnut",
   data: {
@@ -1863,6 +1865,7 @@ let donutChart = new Chart("progress_circle", {
   },
 });
 
+//Home
 let monthChart = new Chart("progress_month", {
   type: "bar",
   data: {
@@ -1944,6 +1947,7 @@ let monthChart = new Chart("progress_month", {
   },
 });
 
+//Graphs upper left
 let yearChart = new Chart("progress_year", {
   type: "line",
   data: {
@@ -2052,6 +2056,7 @@ let yearChart = new Chart("progress_year", {
   },
 });
 
+//Graphs lower left
 let totalChart = new Chart("progress_total", {
   type: "bar",
   data: {
@@ -2094,6 +2099,7 @@ let totalChart = new Chart("progress_total", {
   },
 });
 
+//Graphs lower right
 let paysheet_donut_left = new Chart("paysheet_donut_left", {
   type: "doughnut",
   data: {
@@ -2119,8 +2125,17 @@ let paysheet_donut_left = new Chart("paysheet_donut_left", {
       display: false, // Hide legend
     },
     plugins: {
-      datalabels: {
-        display: false, // Hide labels
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            let value = tooltipItem.raw;
+            return value + " hours";
+          },
+        },
+        labels: {
+          display: false,
+        },
       },
     },
   },
