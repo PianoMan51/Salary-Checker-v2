@@ -75,6 +75,203 @@ let statCategories = [
   "Sygedage",
 ];
 
+//////////////////// SETTINGS, TOASTS & THEME ////////////////////
+
+let appSettings = {
+  storeOpen: "06:45",
+  storeClose: "21:15",
+  eveningStart: "18:00",
+  saturdayStart: "15:00",
+  quickTimes: [
+    "06:45",
+    "08:00",
+    "09:00",
+    "10:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "19:30",
+    "20:15",
+    "21:15",
+  ],
+};
+
+function showToast(message, type = "info") {
+  let container = document.getElementById("toast_container");
+  let toast = document.createElement("DIV");
+  toast.className = "toast " + type;
+  let icon =
+    type === "success"
+      ? "fa-circle-check"
+      : type === "error"
+      ? "fa-circle-exclamation"
+      : "fa-circle-info";
+  toast.innerHTML = `<i class="fa-solid ${icon}"></i><span></span>`;
+  toast.querySelector("span").textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("hide");
+    toast.addEventListener("animationend", () => toast.remove());
+  }, 3200);
+}
+
+function attachQuickSelectEvents(quickSelect) {
+  quickSelect.addEventListener("mouseover", function () {
+    document.querySelectorAll(".quickSelect").forEach((button) => {
+      button.style.opacity = 0.5;
+    });
+    this.style.opacity = 1;
+    if (quickStart == true) {
+      start.style.transform = "scale(1.1)";
+      end.style.opacity = 0.5;
+      end.style.transform = "scale(0.9)";
+    } else {
+      end.style.transform = "scale(1.1)";
+      start.style.opacity = 0.5;
+      start.style.transform = "scale(0.9)";
+    }
+  });
+  quickSelect.addEventListener("mouseout", function () {
+    document.querySelectorAll(".quickSelect").forEach((button) => {
+      button.style.opacity = 1;
+    });
+    start.style.transform = "scale(1)";
+    start.style.opacity = 1;
+    end.style.transform = "scale(1)";
+    end.style.opacity = 1;
+  });
+  quickSelect.addEventListener("click", function () {
+    let time = quickSelect.textContent;
+    if (quickStart == true) {
+      start.value = time;
+      quickStart = false;
+    } else {
+      end.value = time;
+      quickStart = true;
+    }
+  });
+}
+
+function renderQuickSelects() {
+  quickSelects.innerHTML = "";
+  appSettings.quickTimes.forEach((time) => {
+    let span = document.createElement("SPAN");
+    span.className = "quickSelect";
+    span.textContent = time;
+    attachQuickSelectEvents(span);
+    quickSelects.appendChild(span);
+  });
+}
+
+async function loadSettings() {
+  try {
+    const response = await fetch("/settings");
+    const data = await response.json();
+    Object.assign(appSettings, data);
+  } catch (error) {
+    console.error("Could not load settings:", error);
+  }
+  renderQuickSelects();
+  updateListedShifts();
+}
+
+let modalOverlay = document.getElementById("modal_overlay");
+
+document.getElementById("settings_open").addEventListener("click", () => {
+  document.getElementById("setting_open").value = appSettings.storeOpen;
+  document.getElementById("setting_close").value = appSettings.storeClose;
+  document.getElementById("setting_evening").value = appSettings.eveningStart;
+  document.getElementById("setting_saturday").value = appSettings.saturdayStart;
+  document.getElementById("setting_quicktimes").value =
+    appSettings.quickTimes.join(", ");
+  modalOverlay.classList.remove("hidden");
+});
+
+document.getElementById("settings_close").addEventListener("click", () => {
+  modalOverlay.classList.add("hidden");
+});
+
+modalOverlay.addEventListener("click", (event) => {
+  if (event.target === modalOverlay) {
+    modalOverlay.classList.add("hidden");
+  }
+});
+
+document.getElementById("settings_save").addEventListener("click", () => {
+  let isTime = (value) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+  let storeOpen = document.getElementById("setting_open").value.trim();
+  let storeClose = document.getElementById("setting_close").value.trim();
+  let eveningStart = document.getElementById("setting_evening").value.trim();
+  let saturdayStart = document.getElementById("setting_saturday").value.trim();
+  let quickTimes = document
+    .getElementById("setting_quicktimes")
+    .value.split(",")
+    .map((time) => time.trim())
+    .filter(Boolean);
+
+  if (
+    ![storeOpen, storeClose, eveningStart, saturdayStart].every(isTime) ||
+    quickTimes.length === 0 ||
+    !quickTimes.every(isTime)
+  ) {
+    showToast("All times must use HH:MM format", "error");
+    return;
+  }
+
+  appSettings = { storeOpen, storeClose, eveningStart, saturdayStart, quickTimes };
+  fetch("/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(appSettings),
+  })
+    .then((response) => {
+      if (!response.ok) throw new Error("Save failed");
+      showToast("Settings saved", "success");
+    })
+    .catch(() => showToast("Could not save settings", "error"));
+
+  renderQuickSelects();
+  updateListedShifts();
+  modalOverlay.classList.add("hidden");
+});
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("theme", theme);
+  Chart.defaults.font.family = '"Inter", system-ui, sans-serif';
+  let dark = theme === "dark";
+  let themeIcon = document.getElementById("theme_toggle");
+  themeIcon.classList.toggle("fa-sun", dark);
+  themeIcon.classList.toggle("fa-moon", !dark);
+  Chart.defaults.color = dark ? "#9fb0c8" : "#64748b";
+  Chart.defaults.borderColor = dark
+    ? "rgba(255, 255, 255, 0.08)"
+    : "rgba(15, 23, 42, 0.08)";
+  let surface = dark ? "#182338" : "#ffffff";
+  donutChart.data.datasets[0].borderColor = surface;
+  paysheet_donut_left.data.datasets[0].borderColor = surface;
+  [
+    donutChart,
+    monthChart,
+    yearChart,
+    totalChart,
+    paysheet_donut_left,
+  ].forEach((chart) => chart.update());
+}
+
+document.getElementById("theme_toggle").addEventListener("click", () => {
+  applyTheme(
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark"
+  );
+});
+
+//////////////////////////////////////////////////////////////////
+
 deleteButton.addEventListener("click", () => {
   deleteActive = !deleteActive;
   sickActive = false;
@@ -117,11 +314,11 @@ year_buttons.addEventListener("click", function (event) {
     localStorage.setItem("currentYear", currentYear);
 
     yearButtons.forEach((otherYear) => {
-      otherYear.style.backgroundColor = "var(--gray)";
+      otherYear.style.backgroundColor = "var(--lightgray)";
       otherYear.classList.remove("active");
     });
 
-    clickedYear.style.backgroundColor = "var(--darkergray)";
+    clickedYear.style.backgroundColor = "var(--darkbackground)";
     clickedYear.classList.add("active");
 
     loadCell();
@@ -149,6 +346,12 @@ document.querySelectorAll(".calendar_button").forEach((calendarButton) => {
   });
 });
 
+function setActiveNav() {
+  document.querySelectorAll(".nav_page").forEach((navBtn) => {
+    navBtn.classList.toggle("active", "page_" + navBtn.id === pageId);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   let page = document.getElementById(pageId);
 
@@ -157,12 +360,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   page.style.display = "flex";
+  setActiveNav();
   if (pageId == "page_nav4") {
     loadTotalData();
   }
 });
 
-document.querySelectorAll(".nav button").forEach((button) => {
+document.querySelectorAll(".nav_page").forEach((button) => {
   button.addEventListener("click", function () {
     pageId = "page_" + button.id;
     let content = document.getElementById(pageId);
@@ -173,47 +377,10 @@ document.querySelectorAll(".nav button").forEach((button) => {
 
     content.style.display = "flex";
     localStorage.setItem("pageId", pageId);
+    setActiveNav();
 
     if (pageId == "page_nav4") {
       loadTotalData();
-    }
-  });
-});
-
-document.querySelectorAll(".quickSelect").forEach((quickSelect) => {
-  quickSelect.addEventListener("mouseover", function () {
-    document.querySelectorAll(".quickSelect").forEach((button) => {
-      button.style.opacity = 0.5;
-      this.style.opacity = 1;
-    });
-    if (quickStart == true) {
-      start.style.transform = "scale(1.1)";
-      end.style.opacity = 0.5;
-      end.style.transform = "scale(0.9)";
-    } else {
-      end.style.transform = "scale(1.1)";
-      start.style.opacity = 0.5;
-      start.style.transform = "scale(0.9)";
-    }
-  });
-  quickSelect.addEventListener("mouseout", function () {
-    document.querySelectorAll(".quickSelect").forEach((button) => {
-      button.style.opacity = 1;
-    });
-    start.style.transform = "scale(1)";
-    start.style.opacity = 1;
-    end.style.transform = "scale(1)";
-    end.style.opacity = 1;
-  });
-
-  quickSelect.addEventListener("click", function () {
-    let time = quickSelect.innerHTML;
-    if (quickStart == true) {
-      start.value = time;
-      quickStart = false;
-    } else {
-      end.value = time;
-      quickStart = true;
     }
   });
 });
@@ -303,12 +470,15 @@ function createYearButtons() {
           year.innerHTML = yearCounter;
           year.setAttribute("class", "year");
           year.setAttribute("id", "year" + yearCounter);
-          year.style = "background-color: var(--gray);";
+          year.style = "background-color: var(--lightgray);";
           changeYear.appendChild(year);
         }
       }
-      document.getElementById("year" + currentYear).style.backgroundColor =
-        "var(--darkestgray)";
+      let activeYearBtn = document.getElementById("year" + currentYear);
+      if (activeYearBtn) {
+        activeYearBtn.classList.add("active");
+        activeYearBtn.style.backgroundColor = "var(--darkbackground)";
+      }
     });
 }
 
@@ -509,7 +679,7 @@ let addShift = (event) => {
             let shiftStart = new Date(`2000-01-01T${start.value}:00`);
             let shiftEnd = new Date(`2000-01-01T${end.value}:00`);
             if (shiftStart > shiftEnd) {
-              alert("Not possible");
+              showToast("A shift can't end before it starts", "error");
               return;
             }
 
@@ -519,7 +689,9 @@ let addShift = (event) => {
 
             //// EVENING ////
             if (weekday !== "Saturday" && weekday !== "Sunday") {
-              let eveningStart = new Date(`2000-01-01T18:00:00`);
+              let eveningStart = new Date(
+                `2000-01-01T${appSettings.eveningStart}:00`
+              );
 
               if (shiftEnd <= eveningStart) {
                 // If the shift ends before or exactly at 6 pm, no extra hours are worked on evening
@@ -543,7 +715,9 @@ let addShift = (event) => {
             let saturdayTotal = 0;
             let saturdayHours = 0;
             if (weekday == "Saturday") {
-              let saturdayStart = new Date(`2000-01-01T15:00:00`);
+              let saturdayStart = new Date(
+                `2000-01-01T${appSettings.saturdayStart}:00`
+              );
 
               if (shiftEnd <= saturdayStart) {
                 // If the shift ends before or exactly at 3 pm, no extra hours are worked on Saturday
@@ -601,9 +775,8 @@ let addShift = (event) => {
           }
           updateListedShifts();
         }
-      } else {
-        if (event.target.classList.contains !== "off") {
-          let nothing = null;
+      } else if (deleteActive === true) {
+        if (!event.target.classList.contains("off")) {
           if (event.target.classList.contains("sick")) {
             event.target.classList.remove("sick");
           }
@@ -612,15 +785,15 @@ let addShift = (event) => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ tdId, nothing, currentIndex }),
+            body: JSON.stringify({ tdId, content: null, currentIndex }),
           })
             .then((response) => response.json())
             .then((data) => {
               loadCell();
+              updateListedShifts();
+              updatePaysheet();
             })
             .catch((error) => console.error("Error:", error));
-          updateListedShifts();
-          loadCell();
         }
       }
     }
@@ -733,7 +906,7 @@ function changeMonth(direction) {
         currentYear++;
       }
     } else {
-      alert("you shall not pass");
+      showToast("No more months — add a new year first", "error");
     }
   } else {
     currentIndex = localStorage.getItem("currentIndex") || 0;
@@ -742,11 +915,12 @@ function changeMonth(direction) {
   let currentYearBtn = document.getElementById("year" + currentYear);
   let yearButtons = document.querySelectorAll(".year");
   yearButtons.forEach((otherYear) => {
-    otherYear.style.backgroundColor = "var(--gray)";
+    otherYear.style.backgroundColor = "var(--lightgray)";
     otherYear.classList.remove("active");
   });
   if (currentYearBtn) {
-    currentYearBtn.style.backgroundColor = "var(--darkergray)";
+    currentYearBtn.classList.add("active");
+    currentYearBtn.style.backgroundColor = "var(--darkbackground)";
   }
 
   localStorage.setItem("currentIndex", currentIndex);
@@ -1260,9 +1434,13 @@ function updatePaysheetRates() {
 
 async function loadTotalData() {
   let overallChartData = [];
+  let yearLabels = [];
 
   try {
-    for (let year = 2018; year < 2025; year++) {
+    const countResponse = await fetch("/fileCount");
+    const { count } = await countResponse.json();
+
+    for (let year = 2018; year < 2018 + count; year++) {
       const response = await fetch(`/data?currentYear=${year}`);
       const data = await response.json();
 
@@ -1274,12 +1452,15 @@ async function loadTotalData() {
           }
         }
       }
+      yearLabels.push(String(year));
       overallChartData.push(yearTotal);
-      updateTotalChart(overallChartData);
-      updatePaysheet_donut_left(overallChartData);
     }
+    totalChart.data.labels = yearLabels;
+    paysheet_donut_left.data.labels = yearLabels;
+    updateTotalChart(overallChartData);
+    updatePaysheet_donut_left(overallChartData);
   } catch (error) {
-    alert("No data available.");
+    showToast("No data available", "error");
     console.error(error);
   }
 }
@@ -1303,6 +1484,9 @@ function updateTotalChart(totalChartData) {
 function updatePaysheet_donut_left(totalChartData) {
   paysheet_donut_left.data.datasets[0].data = totalChartData;
   paysheet_donut_left.update();
+
+  let total = totalChartData.reduce((sum, value) => sum + value, 0);
+  document.getElementById("donut_total_hours").innerHTML = Math.trunc(total);
 }
 
 function updateListedShifts() {
@@ -1354,8 +1538,8 @@ function updateListedShifts() {
           day = "MON";
         }
 
-        let open = new Date(`2000-01-01T06:45:00`);
-        let closed = new Date(`2000-01-01T21:15:00`);
+        let open = new Date(`2000-01-01T${appSettings.storeOpen}:00`);
+        let closed = new Date(`2000-01-01T${appSettings.storeClose}:00`);
 
         if (
           (data[currentIndex][0][i] && data[currentIndex][0][i].state == 0) ||
@@ -1686,146 +1870,69 @@ function currentStat(direction) {
     statCategories[currentStatIndex];
 }
 
+let statCategoryConfig = {
+  Udbetalt: {
+    endpoint: (year) => `/paysheetRates?currentYear=${year}`,
+    extract: (month) => +month[2].udbetaling_beløb || 0,
+  },
+  Timer: {
+    endpoint: (year) => `/data?currentYear=${year}`,
+    extract: (month) =>
+      month[0].reduce((sum, shift) => sum + (shift ? +shift.time : 0), 0),
+  },
+  Dividende: {
+    endpoint: (year) => `/paysheetRates?currentYear=${year}`,
+    extract: (month) => +month[2].personalerabat_beløb || 0,
+  },
+  Fritvalgskonto: {
+    endpoint: (year) => `/paysheetRates?currentYear=${year}`,
+    extract: (month) => +month[2].udbetalingFritvalgs_beløb || 0,
+  },
+  Sygedage: {
+    endpoint: (year) => `/data?currentYear=${year}`,
+    extract: (month) =>
+      month[0].filter((shift) => shift && shift.state == 1).length,
+  },
+};
+
 function updatePayheet_stats(category) {
   let table = document.getElementById("stats_right_table_top");
+  let rowCount = table.children.length; // header row + one row per year + TOT row
+  let config = statCategoryConfig[category];
   let columnSums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  for (let i = 0; i < table.childNodes.length; i++) {
-    let year = 2018 + i;
-    let month_val = 0;
-    let year_val = 0;
+  let promises = [];
 
-    if (category === "Udbetalt") {
-      if (i > 0 && i < table.childNodes.length - 2) {
-        fetch(`/paysheetRates?currentYear=${year - 1}`)
-          .then((response) => response.json())
-          .then((paysheetRates) => {
-            for (let j = 0; j < 15; j++) {
-              let tds = table.children[i].children[j];
-              if (j > 0 && j < 13) {
-                month_val = paysheetRates[j - 1][2].udbetaling_beløb;
-                year_val += +month_val;
-                columnSums[j - 1] += Math.trunc(+month_val);
-                tds.innerHTML = Math.trunc(month_val);
-              }
-              if (j == 13) {
-                tds.innerHTML = Math.trunc(year_val);
-              }
-              if (j == 14) {
-                tds.innerHTML = Math.trunc(year_val / 12);
-              }
-            }
-          });
-      }
-    }
-    if (category === "Dividende") {
-      if (i > 0 && i < table.childNodes.length - 2) {
-        fetch(`/paysheetRates?currentYear=${year - 1}`)
-          .then((response) => response.json())
-          .then((paysheetRates) => {
-            for (let j = 0; j < 15; j++) {
-              let tds = table.children[i].children[j];
-              if (j > 0 && j < 13) {
-                month_val = paysheetRates[j - 1][2].personalerabat_beløb;
-                year_val += +month_val;
-                columnSums[j - 1] += Math.trunc(+month_val);
-                tds.innerHTML = Math.trunc(month_val);
-              }
-              if (j == 13) {
-                tds.innerHTML = Math.trunc(year_val);
-              }
-              if (j == 14) {
-                tds.innerHTML = Math.trunc(year_val / 12);
-              }
-            }
-          });
-      }
-    }
-    if (category === "Fritvalgskonto") {
-      if (i > 0 && i < table.childNodes.length - 2) {
-        fetch(`/paysheetRates?currentYear=${year - 1}`)
-          .then((response) => response.json())
-          .then((paysheetRates) => {
-            for (let j = 0; j < 15; j++) {
-              let tds = table.children[i].children[j];
-              if (j > 0 && j < 13) {
-                month_val = paysheetRates[j - 1][2].udbetalingFritvalgs_beløb;
-                year_val += +month_val;
-                columnSums[j - 1] += Math.trunc(+month_val);
-                tds.innerHTML = Math.trunc(month_val);
-              }
-              if (j == 13) {
-                tds.innerHTML = Math.trunc(year_val);
-              }
-              if (j == 14) {
-                tds.innerHTML = Math.trunc(year_val / 12);
-              }
-            }
-          });
-      }
-    }
-    if (category === "Timer") {
-      if (i > 0 && i < table.childNodes.length - 2) {
-        fetch(`/data?currentYear=${year - 1}`)
-          .then((response) => response.json())
-          .then((data) => {
-            for (let j = 0; j < 15; j++) {
-              let tds = table.children[i].children[j];
-              if (j > 0 && j < 13) {
-                let hours = 0;
-                for (let k = 0; k < data[j - 1][0].length; k++) {
-                  if (data[j - 1][0][k]) {
-                    hours += data[j - 1][0][k].time;
-                  }
-                }
-                month_val = hours;
+  for (let i = 1; i < rowCount - 1; i++) {
+    let year = 2017 + i;
+    let tds = table.children[i].children;
 
-                year_val += +month_val;
-                columnSums[j - 1] += Math.trunc(+month_val);
-                tds.innerHTML = Math.trunc(month_val);
-              }
-              if (j == 13) {
-                tds.innerHTML = Math.trunc(year_val);
-              }
-              if (j == 14) {
-                tds.innerHTML = Math.trunc(year_val / 12);
-              }
-            }
-          });
-      }
-    }
-    if (category === "Sygedage") {
-      if (i > 0 && i < table.childNodes.length - 2) {
-        fetch(`/data?currentYear=${year - 1}`)
-          .then((response) => response.json())
-          .then((data) => {
-            for (let j = 0; j < 15; j++) {
-              let tds = table.children[i].children[j];
-              if (j > 0 && j < 13) {
-                let sygedage = 0;
-                for (let k = 0; k < data[j - 1][0].length; k++) {
-                  if (data[j - 1][0][k]) {
-                    if (data[j - 1][0][k].state == 1) {
-                      sygedage++;
-                    }
-                  }
-                }
-                month_val = sygedage;
-
-                year_val += +month_val;
-                columnSums[j - 1] += Math.trunc(+month_val);
-                tds.innerHTML = Math.trunc(month_val);
-              }
-              if (j == 13) {
-                tds.innerHTML = Math.trunc(year_val);
-              }
-              if (j == 14) {
-                tds.innerHTML = Math.trunc(year_val / 12);
-              }
-            }
-          });
-      }
-    }
+    promises.push(
+      fetch(config.endpoint(year))
+        .then((response) => response.json())
+        .then((yearData) => {
+          let yearTotal = 0;
+          for (let j = 0; j < 12; j++) {
+            let value = Math.trunc(config.extract(yearData[j]));
+            yearTotal += value;
+            columnSums[j] += value;
+            tds[j + 1].innerHTML = value;
+          }
+          tds[13].innerHTML = Math.trunc(yearTotal);
+          tds[14].innerHTML = Math.trunc(yearTotal / 12);
+        })
+    );
   }
+
+  Promise.all(promises).then(() => {
+    let totalRow = table.children[rowCount - 1];
+    let grandTotal = 0;
+    for (let j = 0; j < 12; j++) {
+      totalRow.children[j + 1].innerHTML = columnSums[j];
+      grandTotal += columnSums[j];
+    }
+    totalRow.children[13].innerHTML = Math.trunc(grandTotal);
+    totalRow.children[14].innerHTML = Math.trunc(grandTotal / 12);
+  });
 }
 
 //Home
@@ -1836,7 +1943,7 @@ let donutChart = new Chart("progress_circle", {
     datasets: [
       {
         data: [],
-        backgroundColor: ["#3498db", "#2c3e50", "#f39c12", "#c0392b"],
+        backgroundColor: ["#2a78d6", "#4a3aa7", "#eda100", "#e34948"],
       },
     ],
   },
@@ -1909,7 +2016,7 @@ let monthChart = new Chart("progress_month", {
     datasets: [
       {
         data: [],
-        backgroundColor: "#3498db",
+        backgroundColor: "#2a78d6",
         borderRadius: 10,
       },
     ],
@@ -1947,58 +2054,58 @@ let monthChart = new Chart("progress_month", {
   },
 });
 
-//Graphs upper left
+let chartMonthLabels = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+//Graphs upper left — hours & payout per month, combined on dual axes
 let yearChart = new Chart("progress_year", {
   type: "line",
   data: {
-    labels: [
-      "January",
-      "Febuary",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "Septemper",
-      "October",
-      "November",
-      "December",
-    ],
+    labels: chartMonthLabels,
     datasets: [
       {
         data: [],
-        backgroundColor: "#3498db",
-        borderColor: "#3498db",
-        borderRadius: 10,
-        yAxisID: "y",
+        backgroundColor: "#2a78d6",
+        borderColor: "#2a78d6",
         label: "Hours",
-        tension: 0.1,
+        yAxisID: "hours",
+        tension: 0.35,
         pointRadius: 0,
-        borderWidth: 5,
+        borderWidth: 3,
       },
       {
         data: [],
-        backgroundColor: "#4cd137",
-        borderColor: "#4cd137",
-        borderRadius: 10,
-        yAxisID: "y1",
-        tension: 0.1,
+        backgroundColor: "#10b981",
+        borderColor: "#10b981",
+        label: "Payout",
+        yAxisID: "payout",
+        tension: 0.35,
         pointRadius: 0,
-        borderWidth: 5,
+        borderWidth: 3,
       },
     ],
   },
   options: {
-    hoverRadius: 12,
+    hoverRadius: 8,
     hitRadius: 30,
     scales: {
-      y: {
+      hours: {
         type: "linear",
-        display: true,
+        position: "left",
         min: 0,
         max: 120,
-        position: "left",
         grid: {
           display: false,
         },
@@ -2008,12 +2115,11 @@ let yearChart = new Chart("progress_year", {
           },
         },
       },
-      y1: {
+      payout: {
         type: "linear",
-        display: true,
+        position: "right",
         min: 0,
         max: 14000,
-        position: "right",
         grid: {
           display: false,
         },
@@ -2027,26 +2133,36 @@ let yearChart = new Chart("progress_year", {
         grid: {
           display: false,
         },
+        ticks: {
+          display: false,
+        },
       },
     },
     plugins: {
+      title: {
+        display: true,
+        text: "Hours & payout per month",
+        align: "start",
+        font: { size: 13, weight: 600 },
+      },
       legend: {
-        display: false,
+        display: true,
+        position: "top",
+        align: "end",
+        labels: {
+          boxWidth: 10,
+          boxHeight: 10,
+          usePointStyle: true,
+          pointStyle: "circle",
+        },
       },
       tooltip: {
-        displayColors: false,
+        displayColors: true,
         callbacks: {
           label: function (tooltipItem) {
-            let datasetIndex = tooltipItem.datasetIndex;
-            let value = tooltipItem.raw;
-
-            if (datasetIndex === 0) {
-              return value + " hours";
-            } else if (datasetIndex === 1) {
-              return "$" + value;
-            }
-
-            return value;
+            return tooltipItem.dataset.label === "Payout"
+              ? "$" + tooltipItem.raw
+              : tooltipItem.raw + " hours";
           },
         },
       },
@@ -2064,7 +2180,7 @@ let totalChart = new Chart("progress_total", {
     datasets: [
       {
         data: [],
-        backgroundColor: "#3498db",
+        backgroundColor: "#2a78d6",
         borderRadius: 10,
       },
     ],
@@ -2108,11 +2224,13 @@ let paysheet_donut_left = new Chart("paysheet_donut_left", {
       {
         data: [],
         backgroundColor: [
-          "#3498db",
-          "#2c3e50",
-          "#f39c12",
-          "#c0392b",
-          "#2ecc71",
+          "#2a78d6",
+          "#008300",
+          "#e87ba4",
+          "#eda100",
+          "#1baf7a",
+          "#eb6834",
+          "#4a3aa7",
         ],
         borderRadius: 10,
       },
@@ -2120,11 +2238,20 @@ let paysheet_donut_left = new Chart("paysheet_donut_left", {
   },
   options: {
     borderWidth: 3,
-    cutout: 90,
-    legend: {
-      display: false, // Hide legend
-    },
+    cutout: "68%",
     plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+        labels: {
+          boxWidth: 10,
+          boxHeight: 10,
+          usePointStyle: true,
+          pointStyle: "circle",
+          padding: 10,
+          font: { size: 11 },
+        },
+      },
       tooltip: {
         displayColors: false,
         callbacks: {
@@ -2133,19 +2260,15 @@ let paysheet_donut_left = new Chart("paysheet_donut_left", {
             return value + " hours";
           },
         },
-        labels: {
-          display: false,
-        },
       },
     },
+    responsive: true,
+    maintainAspectRatio: false,
   },
 });
 
-donutChart.update();
-monthChart.update();
-yearChart.update();
-totalChart.update();
-paysheet_donut_left.update();
+applyTheme(localStorage.getItem("theme") || "light");
+loadSettings();
 loadCell();
 updatePaysheet();
 changeMonth();

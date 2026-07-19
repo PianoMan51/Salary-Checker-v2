@@ -4,40 +4,43 @@
 <head>
     <title>Salary Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
     <script src="https://kit.fontawesome.com/d66dd0368f.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <div id="banner">
-        <button class="banner_button" style="background-color: var(--red);"></button>
-        <button class="banner_button" style="background-color: var(--yellow);"></button>
-        <button class="banner_button" style="background-color: var(--green);"></button>
-    </div>
     <div id="wrapper">
         <div class="nav">
+            <div id="nav_brand">
+                <div id="brand_icon"><i class="fa-solid fa-coins"></i></div>
+                <span>Salary<em>.</em></span>
+            </div>
             <div id="nav_pages">
                 <button class="nav_page" id="nav1">
-                    <i class="fa-solid fa-house-chimney fa-2xl" style="color: var(--darkestgray)"></i>Home
+                    <i class="fa-solid fa-house-chimney fa-lg"></i><span>Home</span>
                 </button>
                 <button class="nav_page" id="nav2">
-                    <i class="fa-solid fa-calendar-days fa-2xl" style="color: var(--darkestgray)"></i>Calendar
+                    <i class="fa-solid fa-calendar-days fa-lg"></i><span>Calendar</span>
                 </button>
                 <button class="nav_page" id="nav3">
-                    <i class="fa-solid fa-sack-dollar fa-2xl" style="color: var(--darkestgray)"></i>Paycheck
+                    <i class="fa-solid fa-sack-dollar fa-lg"></i><span>Paycheck</span>
                 </button>
                 <button class="nav_page" id="nav4">
-                    <i class="fa-solid fa-chart-line fa-2xl" style="color: var(--darkestgray)"></i>Graphs
+                    <i class="fa-solid fa-chart-line fa-lg"></i><span>Graphs</span>
                 </button>
             </div>
             <div id="nav_options">
-                <i class="fa-solid fa-bell fa-2xl"></i>
-                <i class="fa-solid fa-gear fa-2xl"></i>
-                <i class="fa-solid fa-bars fa-2xl"></i>
-                <i class="fa-solid fa-wrench fa-2xl"></i>
+                <i class="fa-solid fa-moon fa-lg" id="theme_toggle" title="Toggle dark mode"></i>
+                <i class="fa-solid fa-gear fa-lg" id="settings_open" title="Settings"></i>
+                <i class="fa-solid fa-bars fa-lg"></i>
+                <i class="fa-solid fa-wrench fa-lg"></i>
             </div>
         </div>
 
@@ -45,11 +48,11 @@
             <div class="topbar" id="topbar">
                 <div id="changeMonths">
                     <button class="changeMonthButton" id="prevBtn">
-                        <i class="fa-solid fa-arrow-left fa-2xl changeMonthBtn" style="color: #ffffff"></i>
+                        <i class="fa-solid fa-arrow-left changeMonthBtn"></i>
                     </button>
                     <span id="currentMonth"></span>
                     <button class="changeMonthButton" id="nextBtn">
-                        <i class="fa-solid fa-arrow-right fa-2xl changeMonthBtn" style="color: #ffffff"></i>
+                        <i class="fa-solid fa-arrow-right changeMonthBtn"></i>
                     </button>
                 </div>
                 <div id="year_panel">
@@ -67,7 +70,7 @@
             <div id="content">
                 <div class="page" id="page_nav1">
                     <div class="content_section left page_section">
-                        <div class="white_section_left" id="labelContainer" style="background-color: var(--lightgray)">
+                        <div class="white_section_left" id="labelContainer">
                             <div id="labels">
                                 <div class="label section">
                                     <a class="labeldata" id="money_preview"></a>
@@ -433,23 +436,7 @@
                                     <option value="21:30">21:30</option>
                                 </select>
                             </div>
-                            <div id="quickSelects">
-                                <span class="quickSelect">06:45</span>
-                                <span class="quickSelect">08:00</span>
-                                <span class="quickSelect">09:00</span>
-                                <span class="quickSelect">10:00</span>
-                                <span class="quickSelect">12:00</span>
-                                <span class="quickSelect">13:00</span>
-                                <span class="quickSelect">14:00</span>
-                                <span class="quickSelect">15:00</span>
-                                <span class="quickSelect">16:00</span>
-                                <span class="quickSelect">17:00</span>
-                                <span class="quickSelect">18:00</span>
-                                <span class="quickSelect">19:00</span>
-                                <span class="quickSelect">19:30</span>
-                                <span class="quickSelect">20:15</span>
-                                <span class="quickSelect">21:15</span>
-                            </div>
+                            <div id="quickSelects"></div>
                             <div id="editShift" style="display: none;">
                                 <div class="shiftDetailDiv">
                                     <span>Shift start</span>
@@ -491,20 +478,19 @@
                             </div>
                             <div class="preview_section" id="preview_section_right">
                                 <div class="previewIcon">
-                                    <i class="fa-solid fa-briefcase fa-2xl" style="color: white"></i>
+                                    <i class="fa-solid fa-briefcase fa-2xl"></i>
                                 </div>
                                 <div class="previewIcon">
-                                    <i class=" fa-solid fa-cloud-moon fa-2xl" style="color: white">
-                                    </i>
+                                    <i class="fa-solid fa-cloud-moon fa-2xl"></i>
                                 </div>
                                 <div class="previewIcon">
-                                    <i class="fa-solid fa-martini-glass fa-2xl" style="color: white"></i>
+                                    <i class="fa-solid fa-martini-glass fa-2xl"></i>
                                 </div>
                                 <div class="previewIcon">
-                                    <i class="fa-solid fa-church fa-2xl" style="color: white"></i>
+                                    <i class="fa-solid fa-church fa-2xl"></i>
                                 </div>
                                 <div class="previewIcon">
-                                    <i class="fa-solid fa-sack-dollar fa-2xl" style="color: white"></i>
+                                    <i class="fa-solid fa-sack-dollar fa-2xl"></i>
                                 </div>
                             </div>
                         </div>
@@ -679,7 +665,7 @@
                                     </tr>
                                 </table>
                                 <div id="paysheet_editbutton" onclick="updatePaysheetRates(); updatePaysheet();"><i
-                                        class="fa-solid fa-pen-to-square fa-xl" style="color: rgb(52, 73, 94);"></i>
+                                        class="fa-solid fa-pen-to-square fa-xl"></i>
                                 </div>
                             </div>
                         </div>
@@ -758,7 +744,7 @@
                 </div>
                 <div class="page" id="page_nav4">
                     <div class="content_section left page_section">
-                        <div class="white_section_left">
+                        <div class="white_section_left" id="graph_lines_card">
                             <div id="graph_year">
                                 <canvas id="progress_year"></canvas>
                             </div>
@@ -772,6 +758,8 @@
                     <div class=" content_section right page_section">
                         <div class="white_section_right" id="stats_right">
                             <div class="stats_right_section">
+                                <h3 style="background-color: var(--blue);"><i
+                                        class="fa-solid fa-table-cells fa-lg"></i> Yearly overview</h3>
                                 <table id="stats_right_table_top">
                                 </table>
                                 <div id="stats_right_table_top_buttons">
@@ -783,10 +771,12 @@
                                 </div>
                             </div>
                             <div class="stats_right_section">
+                                <h3 style="background-color: var(--moneygreen);"><i
+                                        class="fa-solid fa-chart-pie fa-lg"></i> Hours by year</h3>
                                 <div id="paysheet_donut_left_container">
                                     <canvas id="paysheet_donut_left"></canvas>
+                                    <span id="donut_total_hours"></span>
                                 </div>
-
                             </div>
                         </div>
 
@@ -795,6 +785,38 @@
             </div>
         </div>
     </div>
+
+    <div id="modal_overlay" class="hidden">
+        <div id="settings_modal">
+            <div id="settings_header">
+                <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+                <button id="settings_close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="settings_field">
+                <label for="setting_open">Store opens</label>
+                <input id="setting_open" placeholder="06:45" />
+            </div>
+            <div class="settings_field">
+                <label for="setting_close">Store closes</label>
+                <input id="setting_close" placeholder="21:15" />
+            </div>
+            <div class="settings_field">
+                <label for="setting_evening">Evening rate from</label>
+                <input id="setting_evening" placeholder="18:00" />
+            </div>
+            <div class="settings_field">
+                <label for="setting_saturday">Saturday rate from</label>
+                <input id="setting_saturday" placeholder="15:00" />
+            </div>
+            <div class="settings_field settings_field_wide">
+                <label for="setting_quicktimes">Quick select times (comma separated)</label>
+                <input id="setting_quicktimes" placeholder="06:45, 08:00, 16:00, 21:15" />
+            </div>
+            <button id="settings_save">Save settings</button>
+        </div>
+    </div>
+    <div id="toast_container"></div>
+
     <script src="script.js"></script>
 
 </body>
